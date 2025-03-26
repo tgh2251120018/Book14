@@ -235,22 +235,22 @@ fun ShippingAddress() {
 @Composable
 fun BottomNavigationBar(navController: NavController) {
     NavigationBar(
-        containerColor = Color(0xFF6200EE),
+        containerColor = Color(0xFF3F51B5),
         contentColor = Color.White
     ) {
         val items = listOf(
-            "Trang chủ" to Icons.Filled.Home,
-            "Danh mục" to Icons.Filled.List,
-            "Đơn hàng" to Icons.Filled.ShoppingCart,
-            "Tài khoản" to Icons.Filled.Person
+            Triple("Trang chủ", Icons.Filled.Home, "home"),
+            Triple("Danh mục", Icons.Filled.List, "category"),
+            Triple("Đơn hàng", Icons.Filled.ShoppingCart, "orders"),
+            Triple("Tài khoản", Icons.Filled.Person, "account")
         )
 
-        items.forEach { (label, icon) ->
+        items.forEach { (label, icon, route) ->
             NavigationBarItem(
                 icon = { Icon(imageVector = icon, contentDescription = label) },
                 label = { Text(text = label) },
-                selected = false,
-                onClick = { /* TODO: Chuyển trang */ }
+                selected = false, // ✅ Điều này sẽ đảm bảo UI không bị reset
+                onClick = { navController.navigate(route) }
             )
         }
     }
