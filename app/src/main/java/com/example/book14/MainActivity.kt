@@ -29,7 +29,7 @@ fun AppNavigation(navController: NavHostController) {
         composable("home") { HomeScreen(navController) }
         composable("category") { CategoryScreen(navController) }
         composable("orders") { OrderScreen(navController) }  // ✅ Đảm bảo đã thêm
-        //composable("account") { AccountScreen(navController) }
+        composable("account") { AccountScreen(navController) }
     }
 }
 
