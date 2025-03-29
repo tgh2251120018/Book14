@@ -32,8 +32,8 @@ fun AccountScreen(navController: NavController) {
                     .background(Color(0xFF3F51B5)), // Màu xanh giống CategoryScreen và OrderScreen
             )
 
-            // 🔹 Thông tin tài khoản
-            AccountHeader()
+            // 🔹 Truyền navController vào AccountHeader
+            AccountHeader(navController)
 
             // 🔹 Danh sách các mục cài đặt
             AccountSettingsList()
@@ -51,7 +51,7 @@ fun AccountScreen(navController: NavController) {
 
 // 📌 **Phần tiêu đề tài khoản**
 @Composable
-fun AccountHeader() {
+fun AccountHeader(navController: NavController) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -77,8 +77,10 @@ fun AccountHeader() {
         // 🔹 Chào mừng & Đăng nhập/Đăng ký
         Spacer(modifier = Modifier.height(8.dp))
         Text(text = "Chào mừng bạn!", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+
+        // 🛠 Cập nhật: Thêm điều hướng đến màn hình đăng nhập
         Button(
-            onClick = { /* TODO: Xử lý đăng nhập */ },
+            onClick = { navController.navigate("login") }, // Điều hướng đến LoginScreen
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF3F51B5)),
             modifier = Modifier.padding(top = 4.dp)
         ) {

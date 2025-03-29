@@ -30,6 +30,8 @@ fun AppNavigation(navController: NavHostController) {
         composable("category") { CategoryScreen(navController) }
         composable("orders") { OrderScreen(navController) }  // ✅ Đảm bảo đã thêm
         composable("account") { AccountScreen(navController) }
+        composable("login") { LoginScreen(navController) }
+        composable("signup") { SignUpScreen(navController) }
     }
 }
 
