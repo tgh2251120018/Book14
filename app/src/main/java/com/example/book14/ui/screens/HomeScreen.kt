@@ -52,7 +52,7 @@ fun HomeScreen(navController: NavController) {
             Spacer(modifier = Modifier.height(8.dp))
 
             // 🔹 Thanh tìm kiếm có icon giỏ hàng nằm trên nền cong
-            SearchBar()
+            SearchBar(navController)
 
             // 🔹 Thêm khoảng cách để tách thanh tìm kiếm với hình sách khuyến mãi
             Spacer(modifier = Modifier.height(12.dp))
@@ -61,7 +61,7 @@ fun HomeScreen(navController: NavController) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .offset(y = -30.dp) // Đẩy lên để chồng lên viền cong
+                    .offset(y = (-30).dp) // Đẩy lên để chồng lên viền cong
                     .background(Color.White, shape = RoundedCornerShape(16.dp))
                     .padding(12.dp),
                 contentAlignment = Alignment.Center
@@ -100,13 +100,14 @@ fun LatestInfoSection() {
 
 // 2️⃣ Thanh tìm kiếm có icon giỏ hàng
 @Composable
-fun SearchBar() {
+fun SearchBar(navController: NavController) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp)
             .background(Color.White, shape = RoundedCornerShape(8.dp))
-            .padding(horizontal = 12.dp, vertical = 8.dp),
+            .padding(horizontal = 12.dp, vertical = 8.dp)
+            .clickable { navController.navigate("search") },
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(Icons.Filled.Search, contentDescription = "Search", tint = Color.Gray)

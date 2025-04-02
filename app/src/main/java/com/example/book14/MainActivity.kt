@@ -28,6 +28,7 @@ fun AppNavigation(navController: NavHostController) {
     NavHost(navController, startDestination = "home") {
         composable("home") { HomeScreen(navController) }
         composable("category") { CategoryScreen(navController) }
+        composable("search") { SearchScreen(navController) }
         composable("orders") { OrderScreen(navController) }  // ✅ Đảm bảo đã thêm
         composable("account") { AccountScreen(navController) }
         composable("login") { LoginScreen(navController) }

@@ -33,7 +33,7 @@ fun CategoryScreen(navController: NavController) {
             )
 
             // 🔹 Thanh tìm kiếm nằm dưới nền xanh
-            CategorySearchBar()
+            CategorySearchBar(navController)
 
             // 🔹 Khoảng cách để căn danh mục vào giữa
             Spacer(modifier = Modifier.height(30.dp))
@@ -61,14 +61,15 @@ fun CategoryScreen(navController: NavController) {
 
 // 📌 **Thanh tìm kiếm giống HomeScreen nhưng đổi tên**
 @Composable
-fun CategorySearchBar() {
+fun CategorySearchBar(navController: NavController) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
             .background(Color.White, shape = RoundedCornerShape(8.dp))
             .border(1.dp, Color.Gray, shape = RoundedCornerShape(8.dp))
-            .padding(horizontal = 12.dp, vertical = 8.dp),
+            .padding(horizontal = 12.dp, vertical = 8.dp)
+            .clickable { navController.navigate("search") },
         contentAlignment = Alignment.Center
     ) {
         Row(
