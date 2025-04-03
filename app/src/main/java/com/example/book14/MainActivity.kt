@@ -29,6 +29,11 @@ fun AppNavigation(navController: NavHostController) {
         composable("home") { HomeScreen(navController) }
         composable("category") { CategoryScreen(navController) }
         composable("search") { SearchScreen(navController) }
+        composable("cart") { CartScreen(navController) }
+        composable("searchResult/{query}") { backStackEntry ->
+            val query = backStackEntry.arguments?.getString("query") ?: ""
+            SearchResultScreen(navController, query)
+        }
         composable("orders") { OrderScreen(navController) }  // ✅ Đảm bảo đã thêm
         composable("account") { AccountScreen(navController) }
         composable("login") { LoginScreen(navController) }

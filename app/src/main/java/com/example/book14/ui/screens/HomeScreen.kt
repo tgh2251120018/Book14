@@ -114,7 +114,12 @@ fun SearchBar(navController: NavController) {
         Spacer(modifier = Modifier.width(8.dp))
         Text(text = "Bạn tìm kiếm gì?", color = Color.Gray)
         Spacer(modifier = Modifier.weight(1f))
-        Icon(Icons.Filled.ShoppingCart, contentDescription = "Cart", tint = Color.Gray)
+        Icon(
+            Icons.Filled.ShoppingCart,
+            contentDescription = "Cart",
+            tint = Color.Gray,
+            modifier = Modifier.clickable { navController.navigate("cart") }
+        )
     }
 }
 
