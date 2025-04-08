@@ -15,16 +15,18 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.*
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.book14.R
+import com.example.book14.ui.viewmodels.SearchViewModel
 
 @Composable
-fun SearchScreen(navController: NavController) {
-    var searchText by remember { mutableStateOf("") }
+fun SearchScreen(navController: NavController, viewModel: SearchViewModel = viewModel()) {
+    val searchText by viewModel.searchText.collectAsState()
 
     Column(modifier = Modifier.fillMaxSize().background(Color.White)) {
 
-        // 🔹 Thanh tìm kiếm (Đã sửa giống HomeScreen.kt, CategoryScreen.kt)
+        // 🔹 Thanh tìm kiếm
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -38,7 +40,7 @@ fun SearchScreen(navController: NavController) {
             }
             TextField(
                 value = searchText,
-                onValueChange = { searchText = it },
+                onValueChange = { viewModel.onSearchTextChanged(it) },
                 placeholder = { Text("Sản phẩm, thương hiệu và mọi thứ bạn cần...") },
                 modifier = Modifier.weight(1f),
                 singleLine = true,
@@ -50,14 +52,14 @@ fun SearchScreen(navController: NavController) {
             )
             IconButton(onClick = {
                 if (searchText.isNotBlank()) {
-                    navController.navigate("searchResult/$searchText")
+                    navController.navigate("searchResult/${searchText}")
                 }
             }) {
                 Icon(imageVector = Icons.Default.Search, contentDescription = "Search")
             }
         }
 
-        // 🔹 Tìm Kiếm Phổ Biến
+        // 🔥 Tìm Kiếm Phổ Biến
         Text(
             text = "🔥 Tìm Kiếm Phổ Biến",
             fontSize = 18.sp,
@@ -69,15 +71,15 @@ fun SearchScreen(navController: NavController) {
             modifier = Modifier.padding(8.dp),
             contentPadding = PaddingValues(8.dp)
         ) {
-            items(listOf("List")) { item ->
+            items(viewModel.popularSearches) { item ->
                 Box(
                     modifier = Modifier
                         .padding(4.dp)
                         .background(Color(0xFFF5F5F5), shape = RoundedCornerShape(8.dp))
                         .fillMaxWidth()
                         .clickable {
-                            searchText = item
-                            navController.navigate("searchResult/$searchText")
+                            viewModel.onSearchTextChanged(item)
+                            navController.navigate("searchResult/$item")
                         }
                         .padding(8.dp),
                     contentAlignment = Alignment.Center
@@ -87,7 +89,7 @@ fun SearchScreen(navController: NavController) {
             }
         }
 
-        // 🔹 Danh Mục Nổi Bật
+        // 📌 Danh Mục Nổi Bật
         Text(
             text = "📌 Danh Mục Nổi Bật",
             fontSize = 18.sp,
@@ -99,25 +101,20 @@ fun SearchScreen(navController: NavController) {
             modifier = Modifier.padding(8.dp),
             contentPadding = PaddingValues(8.dp)
         ) {
-            val categories = listOf(
-                "Kinh tế", "Tâm lý", "Thiếu nhi",
-                "Sức Khỏe", "Sách giáo khoa", "Ngoại văn",
-                "NXB Kim Đồng", "NXB Trẻ"
-            )
-            items(categories) { category ->
+            items(viewModel.featuredCategories) { category ->
                 Column(
                     modifier = Modifier
                         .padding(4.dp)
                         .background(Color.White)
                         .fillMaxWidth()
                         .clickable {
-                            searchText = category
-                            navController.navigate("searchResult/$searchText")
+                            viewModel.onSearchTextChanged(category)
+                            navController.navigate("searchResult/$category")
                         },
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Image(
-                        painter = painterResource(id = R.drawable.categories), // Hình ảnh danh mục
+                        painter = painterResource(id = R.drawable.categories),
                         contentDescription = category,
                         modifier = Modifier.size(50.dp)
                     )

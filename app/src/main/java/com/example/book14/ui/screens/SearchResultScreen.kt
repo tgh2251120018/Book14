@@ -12,17 +12,22 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.*
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.*
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.example.book14.R
+import com.example.book14.ui.viewmodels.Product
+import com.example.book14.ui.viewmodels.SearchResultViewModel
 
 @Composable
-fun SearchResultScreen(navController: NavController, query: String) {
-    var showPriceFilter by remember { mutableStateOf(false) }
-    var selectedFilter by remember { mutableStateOf("Phổ biến") }
+fun SearchResultScreen(
+    navController: NavController,
+    query: String,
+    viewModel: SearchResultViewModel = viewModel()
+) {
+    val selectedFilter by viewModel.selectedFilter.collectAsState()
+    val showPriceFilter by viewModel.showPriceFilter.collectAsState()
 
     Column(modifier = Modifier.fillMaxSize().background(Color.White)) {
 
@@ -53,7 +58,7 @@ fun SearchResultScreen(navController: NavController, query: String) {
             }
         }
 
-        // 🔹 Thanh lọc tìm kiếm
+        // 🔹 Bộ lọc
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -63,13 +68,7 @@ fun SearchResultScreen(navController: NavController, query: String) {
             val filters = listOf("Phổ biến", "Bán chạy", "Mới nhất", "Giá")
             filters.forEach { filter ->
                 Button(
-                    onClick = {
-                        if (filter == "Giá") {
-                            showPriceFilter = !showPriceFilter
-                        } else {
-                            selectedFilter = filter
-                        }
-                    },
+                    onClick = { viewModel.onFilterSelected(filter) },
                     colors = ButtonDefaults.buttonColors(
                         backgroundColor = if (selectedFilter == filter) Color.Red else Color.LightGray
                     ),
@@ -80,44 +79,35 @@ fun SearchResultScreen(navController: NavController, query: String) {
             }
         }
 
-        // 🔹 Bộ lọc giá (nếu bấm vào "Giá")
+        // 🔹 Bộ lọc giá
         if (showPriceFilter) {
             Row(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                Button(onClick = { selectedFilter = "Giá: Thấp đến cao" }) {
+                Button(onClick = { viewModel.onPriceSortSelected("Giá: Thấp đến cao") }) {
                     Text("Từ thấp đến cao", fontSize = 14.sp)
                 }
-                Button(onClick = { selectedFilter = "Giá: Cao đến thấp" }) {
-                    Text("Từ cao đến thấp", fontSize = 14.sp)
+                Button(onClick = { viewModel.onPriceSortSelected("Giá: Cao đến thấp") }) {
+                    Text("Từ cao đến cao", fontSize = 14.sp)
                 }
             }
         }
 
-        // 🔹 Danh sách sản phẩm (dữ liệu mẫu)
-        val products = listOf(
-            Product("Boxset Harry Potter", 1571501, R.drawable.categories, 86),
-            Product("Harry Potter - Chiếc Cốc Lửa", 885500, R.drawable.categories, 20),
-            Product("Harry Potter - Tập 3", 765000, R.drawable.categories, 42),
-            Product("Harry Potter - Tập 2", 590000, R.drawable.categories, 30)
-        )
-
+        // 🔹 Danh sách sản phẩm
         LazyVerticalGrid(
             columns = GridCells.Fixed(2),
             modifier = Modifier.padding(8.dp),
             contentPadding = PaddingValues(8.dp)
         ) {
-            items(products) { product ->
+            items(viewModel.productList) { product ->
                 ProductItem(product)
             }
         }
     }
 }
 
-// 🔹 Dữ liệu sản phẩm
-data class Product(val name: String, val price: Int, val image: Int, val sold: Int)
-
+// 🔹 UI sản phẩm
 @Composable
 fun ProductItem(product: Product) {
     Column(

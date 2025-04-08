@@ -2,7 +2,6 @@ package com.example.book14.ui.screens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -19,25 +18,27 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.book14.ui.viewmodels.CartItem
+import com.example.book14.ui.viewmodels.CartViewModel
 import com.example.book14.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CartScreen(navController: NavController) {
-    val cartItems = remember { mutableStateListOf(
-        CartItem(R.drawable.categories, "Nếp Cũ - Trẻ Em Chơi", 202_002),
-        CartItem(R.drawable.categories, "Việt Nam - Lãnh Thổ Và Các Vùng Địa Lý", 203_651)
-    ) }
+fun CartScreen(navController: NavController, viewModel: CartViewModel = viewModel()) {
+    val cartItems by viewModel.cartItems.collectAsState()
 
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text("Giỏ hàng", fontSize = 20.sp, fontWeight = FontWeight.Bold) },
+            TopAppBar(
+                title = { Text("Giỏ hàng", fontSize = 20.sp, fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
                     }
-                })
+                }
+            )
         },
         content = { padding ->
             Column(
@@ -53,10 +54,10 @@ fun CartScreen(navController: NavController) {
                         contentPadding = PaddingValues(16.dp)
                     ) {
                         items(cartItems) { item ->
-                            CartItemRow(item, onRemove = { cartItems.remove(item) })
+                            CartItemRow(item, onRemove = { viewModel.removeItem(item) })
                         }
                     }
-                    CheckoutSection(cartItems)
+                    CheckoutSection(viewModel.getTotalPrice())
                 }
             }
         }
@@ -107,9 +108,7 @@ fun CartItemRow(item: CartItem, onRemove: () -> Unit) {
 }
 
 @Composable
-fun CheckoutSection(cartItems: List<CartItem>) {
-    val totalPrice = cartItems.sumOf { it.price }
-
+fun CheckoutSection(totalPrice: Int) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -126,7 +125,7 @@ fun CheckoutSection(cartItems: List<CartItem>) {
         }
         Spacer(modifier = Modifier.height(12.dp))
         Button(
-            onClick = { /* Xử lý thanh toán */ },
+            onClick = { /* TODO: Xử lý thanh toán */ },
             modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF3F51B5))
         ) {
@@ -134,5 +133,3 @@ fun CheckoutSection(cartItems: List<CartItem>) {
         }
     }
 }
-
-data class CartItem(val imageRes: Int, val name: String, val price: Int)

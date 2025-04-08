@@ -6,7 +6,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -15,20 +15,23 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.rememberNavController
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.book14.ui.viewmodels.OrderViewModel
+import com.example.book14.ui.viewmodels.OrderStatus
+import com.example.book14.ui.viewmodels.BookSuggestion
 
 @Composable
-fun OrderScreen(navController: NavController) {
-    Box(
-        modifier = Modifier.fillMaxSize().background(Color.White)
-    )
+fun OrderScreen(navController: NavController, viewModel: OrderViewModel = viewModel()) {
+    val statuses by viewModel.orderStatuses.collectAsState()
+    val suggestedBooks by viewModel.suggestedBooks.collectAsState()
 
-    {
+    Box(modifier = Modifier.fillMaxSize().background(Color.White)) {
         Column(modifier = Modifier.fillMaxSize()) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(100.dp) // Điều chỉnh chiều cao phù hợp
-                    .background(Color(0xFF3F51B5)), // Màu xanh giống HomeScreen
+                    .height(100.dp)
+                    .background(Color(0xFF3F51B5))
             )
 
             Text(
@@ -38,12 +41,12 @@ fun OrderScreen(navController: NavController) {
                 color = Color.Black,
                 modifier = Modifier.padding(16.dp)
             )
-            OrderTrackingBar()
+
+            OrderTrackingBar(statuses)
             DeliveryIcon()
-            RecommendedBooks()
+            RecommendedBooks(suggestedBooks)
         }
 
-        // Navigation Bar
         Box(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.BottomCenter
@@ -53,17 +56,8 @@ fun OrderScreen(navController: NavController) {
     }
 }
 
-// 📌 **Thanh theo dõi đơn hàng**
 @Composable
-fun OrderTrackingBar() {
-    val statuses = listOf(
-        "Chờ thanh toán" to Icons.Filled.Payment,
-        "Chờ xử lý" to Icons.Filled.Schedule,
-        "Đang vận chuyển" to Icons.Filled.LocalShipping,
-        "Đang giao hàng" to Icons.Filled.DeliveryDining,
-        "Hoàn trả" to Icons.Filled.Replay
-    )
-
+fun OrderTrackingBar(statuses: List<OrderStatus>) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -72,16 +66,15 @@ fun OrderTrackingBar() {
             .padding(12.dp),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        statuses.forEach { (label, icon) ->
+        statuses.forEach { status ->
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Icon(imageVector = icon, contentDescription = label, tint = Color(0xFF3F51B5))
-                Text(text = label, fontSize = 12.sp, fontWeight = FontWeight.Medium)
+                Icon(imageVector = status.icon, contentDescription = status.label, tint = Color(0xFF3F51B5))
+                Text(text = status.label, fontSize = 12.sp, fontWeight = FontWeight.Medium)
             }
         }
     }
 }
 
-// 📌 **Hình ảnh vận chuyển**
 @Composable
 fun DeliveryIcon() {
     Icon(
@@ -94,9 +87,8 @@ fun DeliveryIcon() {
     )
 }
 
-// 📌 **Mục "Bạn có thể thích"**
 @Composable
-fun RecommendedBooks() {
+fun RecommendedBooks(suggestedBooks: List<BookSuggestion>) {
     Column(modifier = Modifier.padding(16.dp)) {
         Text(text = "Bạn có thể thích", fontSize = 18.sp, fontWeight = FontWeight.Bold)
 
@@ -107,16 +99,15 @@ fun RecommendedBooks() {
                 .padding(top = 8.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            repeat(3) {
-                BookItem()
+            suggestedBooks.forEach { book ->
+                BookItem(book)
             }
         }
     }
 }
 
-// 📌 **Sách gợi ý**
 @Composable
-fun BookItem() {
+fun BookItem(book: BookSuggestion) {
     Column(
         modifier = Modifier
             .width(120.dp)
@@ -134,12 +125,11 @@ fun BookItem() {
                 .background(Color.LightGray, shape = RoundedCornerShape(8.dp))
         )
         Spacer(modifier = Modifier.height(4.dp))
-        Text(text = "Tên sách", fontSize = 14.sp, fontWeight = FontWeight.Medium)
-        Text(text = "99.000đ", fontSize = 12.sp, color = Color.Red, fontWeight = FontWeight.Bold)
+        Text(text = book.title, fontSize = 14.sp, fontWeight = FontWeight.Medium)
+        Text(text = book.price, fontSize = 12.sp, color = Color.Red, fontWeight = FontWeight.Bold)
     }
 }
 
-// 📌 **Navigation Bar**
 @Composable
 fun OrderBottomNavigationBar(navController: NavController) {
     NavigationBar(
@@ -149,7 +139,7 @@ fun OrderBottomNavigationBar(navController: NavController) {
         val items = listOf(
             Triple("Trang chủ", Icons.Filled.Home, "home"),
             Triple("Danh mục", Icons.Filled.List, "category"),
-            Triple("Đơn hàng", Icons.Filled.ShoppingCart, "orders"), // ✅ Route đúng
+            Triple("Đơn hàng", Icons.Filled.ShoppingCart, "orders"),
             Triple("Tài khoản", Icons.Filled.Person, "account")
         )
 
@@ -162,7 +152,7 @@ fun OrderBottomNavigationBar(navController: NavController) {
                     if (route != navController.currentDestination?.route) {
                         navController.navigate(route) {
                             popUpTo("home") { inclusive = false }
-                            launchSingleTop = true  // ✅ Tránh mở trùng màn hình
+                            launchSingleTop = true
                         }
                     }
                 }
@@ -171,10 +161,9 @@ fun OrderBottomNavigationBar(navController: NavController) {
     }
 }
 
-// 🌟 **Preview**
 @Preview(showBackground = true)
 @Composable
 fun PreviewOrderScreen() {
     val navController = rememberNavController()
-    OrderScreen(navController)  // ✅ Đảm bảo có truyền `navController`
+    OrderScreen(navController)
 }

@@ -3,34 +3,41 @@ package com.example.book14.ui.screens
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.book14.model.Book
+import com.example.book14.ui.viewmodels.CategoryListViewModel
 
 @Composable
-fun CategoryListScreen(navController: NavController, categoryName: String) {
-    val books = getBooksByCategory(categoryName) // Lấy danh sách sách theo danh mục
+fun CategoryListScreen(
+    navController: NavController,
+    categoryName: String,
+    viewModel: CategoryListViewModel = viewModel()
+) {
+    // Lấy danh sách sách từ ViewModel (StateFlow)
+    val books by viewModel.books.collectAsState()
+
+    // Load danh sách theo danh mục khi màn hình hiển thị
+    LaunchedEffect(categoryName) {
+        viewModel.loadBooksByCategory(categoryName)
+    }
 
     Column(modifier = Modifier.fillMaxSize()) {
+        // 🔹 Header nền xanh
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -38,12 +45,12 @@ fun CategoryListScreen(navController: NavController, categoryName: String) {
                 .background(Color(0xFF3F51B5))
         )
 
-        // 🔹 Thanh tìm kiếm (giống CategorySearchBar)
+        // 🔹 Thanh tìm kiếm (có thể tái sử dụng lại nếu bạn có CategorySearchBar riêng)
         CategorySearchBar(navController)
 
         Spacer(modifier = Modifier.height(10.dp))
 
-        // 🔹 Hiển thị tiêu đề danh mục
+        // 🔹 Tiêu đề danh mục
         Text(
             text = "Danh mục: $categoryName",
             fontSize = 20.sp,
@@ -51,41 +58,28 @@ fun CategoryListScreen(navController: NavController, categoryName: String) {
             modifier = Modifier.padding(16.dp)
         )
 
-        // 🔹 Hiển thị danh sách sách trong danh mục
+        // 🔹 Danh sách sách
         LazyColumn(modifier = Modifier.padding(16.dp)) {
             items(books) { book ->
-                BookItem(book)
+                BookItem(book = book, onClick = {
+                    navController.navigate("productDetail/${book.id}")
+                })
             }
         }
     }
 }
 
-// 📌 **Dữ liệu sách (tĩnh)**
-data class Book(val title: String, val price: String, val imageRes: Int)
-
-fun getBooksByCategory(category: String): List<Book> {
-    return when (category) {
-        "Kinh tế" -> listOf(
-            Book("Kinh tế học cơ bản", "120.000đ", android.R.drawable.ic_menu_gallery),
-            Book("Chiến lược tài chính", "150.000đ", android.R.drawable.ic_menu_gallery)
-        )
-        "Tâm lý" -> listOf(
-            Book("Tư duy nhanh và chậm", "130.000đ", android.R.drawable.ic_menu_gallery),
-            Book("Sức mạnh của thói quen", "140.000đ", android.R.drawable.ic_menu_gallery)
-        )
-        else -> listOf(Book("Sách mẫu", "100.000đ", android.R.drawable.ic_menu_gallery))
-    }
-}
-
-// 📌 **Hiển thị một quyển sách**
 @Composable
-fun BookItem(book: Book) {
+fun BookItem(book: Book, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp)
             .border(1.dp, Color.Gray, shape = RoundedCornerShape(8.dp))
-            .padding(16.dp)
+            .background(Color.White)
+            .clickable { onClick() }
+            .padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Image(
             painter = painterResource(id = book.imageRes),

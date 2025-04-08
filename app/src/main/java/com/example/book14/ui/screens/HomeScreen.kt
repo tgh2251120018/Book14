@@ -3,40 +3,44 @@ package com.example.book14.ui.screens
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.AttachMoney
-import androidx.compose.material.icons.outlined.MenuBook
-import androidx.compose.material.icons.outlined.Business
-import androidx.compose.material.icons.outlined.MoreHoriz
-import androidx.compose.material.icons.outlined.*
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.*
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import androidx.compose.ui.tooling.preview.Preview
+import com.example.book14.ui.viewmodels.HomeViewModel
 
 @Composable
-fun HomeScreen(navController: NavController) {
+fun HomeScreen(
+    navController: NavController,
+    viewModel: HomeViewModel = viewModel()
+) {
+    val latestInfo by viewModel.latestInfo.collectAsState()
+    val shippingAddress by viewModel.shippingAddress.collectAsState()
+
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFFE0E7FF))
     ) {
-        // 🔹 Phần đầu giao diện có nền cong
+        // 🔹 Phần nền cong phía trên
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(220.dp) // Chiều cao phần nền cong
+                .height(220.dp)
                 .background(
-                    color = Color(0xFF3F51B5), // Màu nền
-                    shape = RoundedCornerShape(bottomStart = 50.dp, bottomEnd = 50.dp) // Viền cong
+                    color = Color(0xFF3F51B5),
+                    shape = RoundedCornerShape(bottomStart = 50.dp, bottomEnd = 50.dp)
                 )
         )
 
@@ -45,23 +49,19 @@ fun HomeScreen(navController: NavController) {
                 .fillMaxSize()
                 .padding(16.dp)
         ) {
-            // 🔹 Thông tin mới nhất trên nền cong
-            LatestInfoSection()
+            // 🔹 Thông tin mới nhất từ ViewModel
+            LatestInfoSection(info = latestInfo)
 
-            // 🔹 Thêm khoảng cách trước thanh tìm kiếm
             Spacer(modifier = Modifier.height(8.dp))
 
-            // 🔹 Thanh tìm kiếm có icon giỏ hàng nằm trên nền cong
             SearchBar(navController)
 
-            // 🔹 Thêm khoảng cách để tách thanh tìm kiếm với hình sách khuyến mãi
             Spacer(modifier = Modifier.height(12.dp))
 
-            // 🔹 Hình ảnh sách khuyến mãi nằm chồng lên viền cong
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .offset(y = (-30).dp) // Đẩy lên để chồng lên viền cong
+                    .offset(y = (-30).dp)
                     .background(Color.White, shape = RoundedCornerShape(16.dp))
                     .padding(12.dp),
                 contentAlignment = Alignment.Center
@@ -69,13 +69,12 @@ fun HomeScreen(navController: NavController) {
                 PromotionBooks()
             }
 
-            // 🔹 Các thành phần còn lại
             BookCategories()
             SloganSection()
-            ShippingAddress()
+            ShippingAddress(address = shippingAddress)
         }
 
-        // 🔹 Navigation Bar phải ở dưới cùng
+        // 🔹 Navigation bar dưới cùng
         Box(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.BottomCenter
@@ -85,20 +84,18 @@ fun HomeScreen(navController: NavController) {
     }
 }
 
-// 1️⃣ Thông tin mới nhất (Sửa lại font chữ)
 @Composable
-fun LatestInfoSection() {
+fun LatestInfoSection(info: String) {
     Text(
-        text = "🔥 Sách cũ mà mới - Giảm giá 70%! 🔥",
+        text = info,
         fontSize = 20.sp,
-        fontWeight = FontWeight.Bold, // Chữ đậm
-        fontStyle = androidx.compose.ui.text.font.FontStyle.Italic, // Chữ nghiêng
-        color = Color(0xFFFFD700), // Màu vàng
+        fontWeight = FontWeight.Bold,
+        fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
+        color = Color(0xFFFFD700),
         modifier = Modifier.padding(16.dp)
     )
 }
 
-// 2️⃣ Thanh tìm kiếm có icon giỏ hàng
 @Composable
 fun SearchBar(navController: NavController) {
     Row(
@@ -123,7 +120,6 @@ fun SearchBar(navController: NavController) {
     }
 }
 
-// 3️⃣ Hình ảnh sách trong đợt khuyến mãi
 @Composable
 fun PromotionBooks() {
     Box(
@@ -137,7 +133,6 @@ fun PromotionBooks() {
     }
 }
 
-// 4️⃣ Danh mục phân loại sách
 @Composable
 fun BookCategories() {
     val categories = listOf(
@@ -172,7 +167,7 @@ fun BookCategories() {
                             imageVector = icon,
                             contentDescription = label,
                             modifier = Modifier.size(50.dp),
-                            tint = Color(0xFF3F51B5) // Màu biểu tượng
+                            tint = Color(0xFF3F51B5)
                         )
                         Text(
                             text = label,
@@ -187,16 +182,15 @@ fun BookCategories() {
     }
 }
 
-// 5️⃣ Slogan có đóng khung
 @Composable
 fun SloganSection() {
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp)
-            .background(Color.White, shape = RoundedCornerShape(12.dp)) // Đóng khung
-            .border(1.dp, Color.Gray, shape = RoundedCornerShape(12.dp)) // Viền xám
-            .padding(vertical = 12.dp), // Khoảng cách bên trong
+            .background(Color.White, shape = RoundedCornerShape(12.dp))
+            .border(1.dp, Color.Gray, shape = RoundedCornerShape(12.dp))
+            .padding(vertical = 12.dp),
         contentAlignment = Alignment.Center
     ) {
         Text(
@@ -204,21 +198,20 @@ fun SloganSection() {
             fontSize = 16.sp,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
-            color = Color(0xFF3F51B5) // Màu chữ xanh đậm
+            color = Color(0xFF3F51B5)
         )
     }
 }
 
-// 6️⃣ Địa chỉ giao hàng có đóng khung
 @Composable
-fun ShippingAddress() {
+fun ShippingAddress(address: String) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp)
-            .background(Color.White, shape = RoundedCornerShape(12.dp)) // Đóng khung
-            .border(1.dp, Color.Gray, shape = RoundedCornerShape(12.dp)) // Viền xám
-            .padding(vertical = 12.dp, horizontal = 16.dp) // Khoảng cách bên trong
+            .background(Color.White, shape = RoundedCornerShape(12.dp))
+            .border(1.dp, Color.Gray, shape = RoundedCornerShape(12.dp))
+            .padding(vertical = 12.dp, horizontal = 16.dp)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Icon(
@@ -229,7 +222,7 @@ fun ShippingAddress() {
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-                text = "Giao đến: P.Tân Chánh Hiệp, Quận 12, TPHCM",
+                text = "Giao đến: $address",
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium
             )
@@ -237,7 +230,6 @@ fun ShippingAddress() {
     }
 }
 
-// 7️⃣ Thanh Navigation Bar
 @Composable
 fun BottomNavigationBar(navController: NavController) {
     NavigationBar(
@@ -255,14 +247,13 @@ fun BottomNavigationBar(navController: NavController) {
             NavigationBarItem(
                 icon = { Icon(imageVector = icon, contentDescription = label) },
                 label = { Text(text = label) },
-                selected = false, // ✅ Điều này sẽ đảm bảo UI không bị reset
+                selected = false,
                 onClick = { navController.navigate(route) }
             )
         }
     }
 }
 
-// 🌟 Preview
 @Preview(showBackground = true)
 @Composable
 fun PreviewHomeScreen() {

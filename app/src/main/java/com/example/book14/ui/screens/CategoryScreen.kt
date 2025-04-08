@@ -6,7 +6,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -15,41 +15,45 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.rememberNavController
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.book14.ui.viewmodels.CategoryViewModel
+import com.example.book14.ui.viewmodels.CategoryItem
 
 @Composable
-fun CategoryScreen(navController: NavController) {
+fun CategoryScreen(navController: NavController, viewModel: CategoryViewModel = viewModel()) {
+    val categories by viewModel.categories.collectAsState()
+
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White) // Nền trắng cho toàn bộ màn hình
+            .background(Color.White)
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
-            // 🔹 Phần nền xanh phía trên
+            // 🔹 Header nền xanh
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(100.dp) // Điều chỉnh chiều cao phù hợp
-                    .background(Color(0xFF3F51B5)), // Màu xanh giống HomeScreen
+                    .height(100.dp)
+                    .background(Color(0xFF3F51B5))
             )
 
-            // 🔹 Thanh tìm kiếm nằm dưới nền xanh
+            // 🔹 Thanh tìm kiếm
             CategorySearchBar(navController)
 
-            // 🔹 Khoảng cách để căn danh mục vào giữa
             Spacer(modifier = Modifier.height(30.dp))
 
-            // 🔹 Lưới danh mục 2x3 nằm chính giữa
+            // 🔹 Lưới danh mục
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .weight(1f), // Đẩy xuống giữa
+                    .weight(1f),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                CategoryGrid(navController)
+                CategoryGrid(navController, categories)
             }
         }
 
-        // 🔹 Navigation Bar ở dưới cùng
+        // 🔹 Navigation bar
         Box(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.BottomCenter
@@ -59,7 +63,6 @@ fun CategoryScreen(navController: NavController) {
     }
 }
 
-// 📌 **Thanh tìm kiếm giống HomeScreen nhưng đổi tên**
 @Composable
 fun CategorySearchBar(navController: NavController) {
     Box(
@@ -72,9 +75,7 @@ fun CategorySearchBar(navController: NavController) {
             .clickable { navController.navigate("search") },
         contentAlignment = Alignment.Center
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically
-        ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
             Icon(Icons.Filled.Search, contentDescription = "Search", tint = Color.Gray)
             Spacer(modifier = Modifier.width(8.dp))
             Text(text = "Bạn tìm kiếm gì?", color = Color.Gray)
@@ -89,37 +90,30 @@ fun CategorySearchBar(navController: NavController) {
     }
 }
 
-// 📌 **Lưới danh mục 2x3**
 @Composable
-fun CategoryGrid(navController: NavController) {
-    val categories = listOf(
-        "Kinh tế" to Icons.Filled.TrendingUp,
-        "Tâm lý" to Icons.Filled.Psychology,
-        "Thiếu nhi" to Icons.Filled.FamilyRestroom,
-        "Ngoại ngữ" to Icons.Filled.Translate,
-        "Sách giáo khoa" to Icons.Filled.School,
-        "Comic - Manga" to Icons.Filled.AutoStories
-    )
-
+fun CategoryGrid(navController: NavController, categories: List<CategoryItem>) {
     Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
         categories.chunked(2).forEach { rowItems ->
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
-                rowItems.forEach { (label, icon) ->
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                rowItems.forEach { item ->
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier
                             .padding(16.dp)
                             .clickable {
-                                navController.navigate("category_list/$label") // Điều hướng đến màn hình sản phẩm
+                                navController.navigate("category_list/${item.label}")
                             }
                     ) {
                         Icon(
-                            imageVector = icon,
-                            contentDescription = label,
+                            imageVector = item.icon,
+                            contentDescription = item.label,
                             modifier = Modifier.size(70.dp),
                             tint = Color(0xFF3F51B5)
                         )
-                        Text(text = label, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                        Text(text = item.label, fontSize = 14.sp, fontWeight = FontWeight.Bold)
                     }
                 }
             }
@@ -127,7 +121,6 @@ fun CategoryGrid(navController: NavController) {
     }
 }
 
-// 📌 **Navigation Bar**
 @Composable
 fun CategoryNavigationBar(navController: NavController) {
     NavigationBar(
@@ -152,7 +145,6 @@ fun CategoryNavigationBar(navController: NavController) {
     }
 }
 
-// 🌟 **Preview**
 @Preview(showBackground = true)
 @Composable
 fun PreviewCategoryScreen() {

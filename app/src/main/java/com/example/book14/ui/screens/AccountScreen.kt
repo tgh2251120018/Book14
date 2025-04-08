@@ -17,9 +17,15 @@ import androidx.navigation.NavController
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.rememberNavController
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.book14.ui.viewmodels.AccountViewModel
+import com.example.book14.ui.viewmodels.AccountSettingItemData
 
 @Composable
-fun AccountScreen(navController: NavController) {
+fun AccountScreen(navController: NavController, viewModel: AccountViewModel = viewModel()) {
+    val settings by viewModel.settingItems.collectAsState()
+    val username by viewModel.username.collectAsState()
+
     Box(
         modifier = Modifier.fillMaxSize().background(Color.White)
     ) {
@@ -29,14 +35,11 @@ fun AccountScreen(navController: NavController) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(100.dp)
-                    .background(Color(0xFF3F51B5)), // Màu xanh giống CategoryScreen và OrderScreen
+                    .background(Color(0xFF3F51B5))
             )
 
-            // 🔹 Truyền navController vào AccountHeader
-            AccountHeader(navController)
-
-            // 🔹 Danh sách các mục cài đặt
-            AccountSettingsList()
+            AccountHeader(navController, username)
+            AccountSettingsList(settings)
         }
 
         // 🔹 Navigation Bar
@@ -49,16 +52,15 @@ fun AccountScreen(navController: NavController) {
     }
 }
 
-// 📌 **Phần tiêu đề tài khoản**
+// 🔹 Header
 @Composable
-fun AccountHeader(navController: NavController) {
+fun AccountHeader(navController: NavController, username: String) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // 🔹 Avatar
         Box(
             modifier = Modifier
                 .size(80.dp)
@@ -74,13 +76,11 @@ fun AccountHeader(navController: NavController) {
             )
         }
 
-        // 🔹 Chào mừng & Đăng nhập/Đăng ký
         Spacer(modifier = Modifier.height(8.dp))
-        Text(text = "Chào mừng bạn!", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+        Text(text = "Chào mừng $username!", fontSize = 16.sp, fontWeight = FontWeight.Bold)
 
-        // 🛠 Cập nhật: Thêm điều hướng đến màn hình đăng nhập
         Button(
-            onClick = { navController.navigate("login") }, // Điều hướng đến LoginScreen
+            onClick = { navController.navigate("login") },
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF3F51B5)),
             modifier = Modifier.padding(top = 4.dp)
         ) {
@@ -89,31 +89,20 @@ fun AccountHeader(navController: NavController) {
     }
 }
 
-// 📌 **Danh sách cài đặt tài khoản**
+// 🔹 Danh sách cài đặt
 @Composable
-fun AccountSettingsList() {
-    val settings = listOf(
-        "Tài khoản & Bảo mật" to Icons.Filled.Lock,
-        "Địa chỉ" to Icons.Filled.LocationOn,
-        "Tài khoản/Thẻ ngân hàng" to Icons.Filled.CreditCard,
-        "Trung tâm hỗ trợ" to Icons.Filled.Help,
-        "Điều khoản dịch vụ" to Icons.Filled.Description,
-        "Giới thiệu" to Icons.Filled.Info,
-        "Yêu cầu xóa tài khoản" to Icons.Filled.Delete
-    )
-
+fun AccountSettingsList(settings: List<AccountSettingItemData>) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
     ) {
-        settings.forEach { (title, icon) ->
-            AccountSettingItem(title = title, icon = icon)
+        settings.forEach { item ->
+            AccountSettingItem(title = item.title, icon = item.icon)
         }
     }
 }
 
-// 📌 **Item từng mục cài đặt**
 @Composable
 fun AccountSettingItem(title: String, icon: ImageVector) {
     Row(
@@ -131,7 +120,7 @@ fun AccountSettingItem(title: String, icon: ImageVector) {
     }
 }
 
-// 📌 **Navigation Bar**
+// 🔹 Bottom Nav
 @Composable
 fun AccountNavigationBar(navController: NavController) {
     NavigationBar(
@@ -163,7 +152,6 @@ fun AccountNavigationBar(navController: NavController) {
     }
 }
 
-// 🌟 **Preview**
 @Preview(showBackground = true)
 @Composable
 fun PreviewAccountScreen() {
