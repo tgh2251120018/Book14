@@ -45,7 +45,7 @@ fun CategoryScreen(navController: NavController) {
                     .weight(1f), // Đẩy xuống giữa
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                CategoryGrid()
+                CategoryGrid(navController)
             }
         }
 
@@ -91,7 +91,7 @@ fun CategorySearchBar(navController: NavController) {
 
 // 📌 **Lưới danh mục 2x3**
 @Composable
-fun CategoryGrid() {
+fun CategoryGrid(navController: NavController) {
     val categories = listOf(
         "Kinh tế" to Icons.Filled.TrendingUp,
         "Tâm lý" to Icons.Filled.Psychology,
@@ -101,32 +101,25 @@ fun CategoryGrid() {
         "Comic - Manga" to Icons.Filled.AutoStories
     )
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
+    Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
         categories.chunked(2).forEach { rowItems ->
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
                 rowItems.forEach { (label, icon) ->
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier.padding(16.dp)
+                        modifier = Modifier
+                            .padding(16.dp)
+                            .clickable {
+                                navController.navigate("category_list/$label") // Điều hướng đến màn hình sản phẩm
+                            }
                     ) {
                         Icon(
                             imageVector = icon,
                             contentDescription = label,
                             modifier = Modifier.size(70.dp),
-                            tint = Color(0xFF3F51B5) // Màu xanh giống theme
+                            tint = Color(0xFF3F51B5)
                         )
-                        Text(
-                            text = label,
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Bold
-                        )
+                        Text(text = label, fontSize = 14.sp, fontWeight = FontWeight.Bold)
                     }
                 }
             }

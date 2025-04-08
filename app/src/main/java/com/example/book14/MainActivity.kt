@@ -27,7 +27,12 @@ class MainActivity : ComponentActivity() {
 fun AppNavigation(navController: NavHostController) {
     NavHost(navController, startDestination = "home") {
         composable("home") { HomeScreen(navController) }
+
         composable("category") { CategoryScreen(navController) }
+        composable("category_list/{categoryName}") { backStackEntry ->
+            val categoryName = backStackEntry.arguments?.getString("categoryName") ?: "Danh mục"
+            CategoryListScreen(navController, categoryName)
+        }
         composable("search") { SearchScreen(navController) }
         composable("cart") { CartScreen(navController) }
         composable("searchResult/{query}") { backStackEntry ->
