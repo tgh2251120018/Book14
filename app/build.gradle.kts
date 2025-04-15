@@ -61,9 +61,15 @@ dependencies {
     implementation("androidx.navigation:navigation-compose:2.7.5")
     implementation("androidx.compose.material:material-icons-extended:1.5.0")
     implementation("io.coil-kt:coil-compose:2.3.0")
-    implementation(platform("com.google.firebase:firebase-bom:33.11.0"))
+    implementation(platform("com.google.firebase:firebase-bom:33.12.0"))
     implementation("com.google.firebase:firebase-analytics")
     implementation ("androidx.compose.ui:ui:1.4.3")
     implementation ("androidx.compose.material:material:1.4.3")
     implementation ("androidx.compose.foundation:foundation:1.4.3")
+    implementation ("com.google.firebase:firebase-firestore:24.9.1") // hoặc mới hơn
+    implementation ("com.google.firebase:firebase-auth-ktx:22.3.0")
+    implementation ("com.google.android.gms:play-services-auth:21.0.0")
+    implementation("com.google.accompanist:accompanist-permissions:0.28.0")
+    implementation("com.google.firebase:firebase-storage-ktx:20.3.0")
+
 }

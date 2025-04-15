@@ -1,38 +1,30 @@
 package com.example.book14.ui.screens
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Divider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.book14.R
 import com.example.book14.ui.viewmodels.SignUpViewModel
 
 @Composable
-fun SignUpScreen(navController: NavController, viewModel: SignUpViewModel) {
+fun SignUpScreen(
+    navController: NavController,
+    viewModel: SignUpViewModel,
+    startGoogleSignIn: () -> Unit
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -50,7 +42,11 @@ fun SignUpScreen(navController: NavController, viewModel: SignUpViewModel) {
                 onClick = { navController.popBackStack() },
                 modifier = Modifier.padding(16.dp)
             ) {
-                Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = "Back",
+                    tint = Color.White
+                )
             }
         }
 
@@ -64,28 +60,34 @@ fun SignUpScreen(navController: NavController, viewModel: SignUpViewModel) {
             Text(text = "Đăng ký", fontSize = 24.sp, fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.height(16.dp))
 
-            TextField(
-                value = viewModel.phoneNumber.value,
-                onValueChange = viewModel::onPhoneNumberChanged,
-                placeholder = { Text("Số điện thoại", color = Color.Gray) },
-                modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
-                singleLine = true
-            )
-
-            TextField(
-                value = viewModel.password.value,
-                onValueChange = viewModel::onPasswordChanged,
-                placeholder = { Text("Mật khẩu", color = Color.Gray) },
-                modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
-                singleLine = true
-            )
-
             Button(
-                onClick = { viewModel.onSignUpClicked() },
-                modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF3F51B5))
+                onClick = {
+                    startGoogleSignIn()
+                    // Điều hướng sẽ được xử lý trong MainActivity sau khi đăng nhập/đăng ký thành công
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 16.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color.White),
+                border = BorderStroke(1.dp, Color.Gray)
             ) {
-                Text(text = "Xác nhận", color = Color.White)
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.categories),
+                        contentDescription = "Google",
+                        tint = Color.Unspecified,
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Đăng ký bằng Google",
+                        color = Color.Black,
+                        fontSize = 16.sp
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -101,18 +103,6 @@ fun SignUpScreen(navController: NavController, viewModel: SignUpViewModel) {
                         }
                     }
                 )
-            }
-
-            Divider(modifier = Modifier.padding(vertical = 16.dp))
-            Text(text = "Hoặc đăng ký bằng", color = Color.Gray)
-            Spacer(modifier = Modifier.height(8.dp))
-            Box(
-                modifier = Modifier
-                    .size(50.dp)
-                    .background(Color.LightGray, shape = CircleShape),
-                contentAlignment = Alignment.Center
-            ) {
-                Text("G", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.Red)
             }
         }
     }

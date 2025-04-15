@@ -2,21 +2,30 @@ package com.example.book14.ui.viewmodels
 
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
 class LoginViewModel : ViewModel() {
-    var phoneNumber = mutableStateOf("")
-    var password = mutableStateOf("")
+    var errorMessage = mutableStateOf("")
 
-    fun onPhoneNumberChanged(newValue: String) {
-        phoneNumber.value = newValue
-    }
-
-    fun onPasswordChanged(newValue: String) {
-        password.value = newValue
-    }
-
-    fun onLoginClicked() {
-        // TODO: Gọi Firebase hoặc xử lý API đăng nhập
-        println("Đăng nhập với số: ${phoneNumber.value}, mật khẩu: ${password.value}")
+    fun saveUserToFirestore(userId: String, email: String?, displayName: String?) {
+        viewModelScope.launch {
+            try {
+                val db = FirebaseFirestore.getInstance()
+                db.collection("users").document(userId).set(
+                    mapOf(
+                        "uid" to userId,
+                        "username" to (displayName ?: "Người dùng mới"),
+                        "email" to (email ?: ""),
+                        "address" to "",
+                        "phoneNumber" to ""
+                    )
+                ).await()
+            } catch (e: Exception) {
+                errorMessage.value = "Lỗi lưu thông tin người dùng: ${e.message}"
+            }
+        }
     }
 }
