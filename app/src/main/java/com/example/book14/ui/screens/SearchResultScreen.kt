@@ -13,12 +13,11 @@ import androidx.compose.ui.*
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.*
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.example.book14.ui.viewmodels.Product
-import com.example.book14.ui.viewmodels.SearchResultViewModel
+import com.example.book14.viewmodels.Product
+import com.example.book14.viewmodels.SearchResultViewModel
 
 @Composable
 fun SearchResultScreen(

@@ -1,6 +1,5 @@
 package com.example.book14.ui.screens
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -13,14 +12,16 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.example.book14.model.Book
-import com.example.book14.ui.viewmodels.CategoryListViewModel
+import com.example.book14.viewmodels.CategoryListViewModel
 
 @Composable
 fun CategoryListScreen(
@@ -81,15 +82,18 @@ fun BookItem(book: Book, onClick: () -> Unit) {
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Image(
-            painter = painterResource(id = book.imageRes),
-            contentDescription = book.title,
+        AsyncImage(
+            model = ImageRequest.Builder(LocalContext.current)
+                .data(book.imageUrl)
+                .crossfade(true)
+                .build(),
+            contentDescription = book.name, // ✅ Đổi từ title → name
             modifier = Modifier.size(80.dp)
         )
         Spacer(modifier = Modifier.width(16.dp))
         Column {
-            Text(text = book.title, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-            Text(text = book.price, color = Color.Red, fontSize = 14.sp)
+            Text(text = book.name, fontWeight = FontWeight.Bold, fontSize = 16.sp) // ✅ Sửa title → name
+            Text(text = "${book.price.toInt()}đ", color = Color.Red, fontSize = 14.sp) // ✅ Sửa kiểu Double → String
         }
     }
 }

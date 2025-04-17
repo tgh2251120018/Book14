@@ -18,8 +18,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.rememberNavController
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.book14.ui.viewmodels.AccountViewModel
-import com.example.book14.ui.viewmodels.AccountSettingItemData
+import com.example.book14.viewmodels.AccountViewModel
+import com.example.book14.viewmodels.AccountSettingItemData
 
 @Composable
 fun AccountScreen(navController: NavController, viewModel: AccountViewModel = viewModel()) {

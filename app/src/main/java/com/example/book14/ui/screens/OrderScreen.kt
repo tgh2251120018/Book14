@@ -16,9 +16,9 @@ import androidx.navigation.NavController
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.rememberNavController
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.book14.ui.viewmodels.OrderViewModel
-import com.example.book14.ui.viewmodels.OrderStatus
-import com.example.book14.ui.viewmodels.BookSuggestion
+import com.example.book14.viewmodels.OrderViewModel
+import com.example.book14.viewmodels.OrderStatus
+import com.example.book14.viewmodels.BookSuggestion
 
 @Composable
 fun OrderScreen(navController: NavController, viewModel: OrderViewModel = viewModel()) {

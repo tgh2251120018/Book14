@@ -18,7 +18,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import com.example.book14.ui.viewmodels.HomeViewModel
+import com.example.book14.viewmodels.HomeViewModel
 
 @Composable
 fun HomeScreen(

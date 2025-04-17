@@ -17,7 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.book14.R
-import com.example.book14.ui.viewmodels.SignUpViewModel
+import com.example.book14.viewmodels.SignUpViewModel
 
 @Composable
 fun SignUpScreen(

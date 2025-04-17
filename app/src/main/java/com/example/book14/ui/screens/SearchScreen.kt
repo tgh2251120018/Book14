@@ -18,7 +18,7 @@ import androidx.compose.ui.unit.*
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.book14.R
-import com.example.book14.ui.viewmodels.SearchViewModel
+import com.example.book14.viewmodels.SearchViewModel
 
 @Composable
 fun SearchScreen(navController: NavController, viewModel: SearchViewModel = viewModel()) {

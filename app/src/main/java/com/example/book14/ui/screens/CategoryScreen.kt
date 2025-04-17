@@ -16,8 +16,8 @@ import androidx.navigation.NavController
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.rememberNavController
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.book14.ui.viewmodels.CategoryViewModel
-import com.example.book14.ui.viewmodels.CategoryItem
+import com.example.book14.viewmodels.CategoryViewModel
+import com.example.book14.viewmodels.CategoryItem
 
 @Composable
 fun CategoryScreen(navController: NavController, viewModel: CategoryViewModel = viewModel()) {
