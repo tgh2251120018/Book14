@@ -11,11 +11,11 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.*
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
 import com.example.book14.viewmodels.Product
 import com.example.book14.viewmodels.SearchResultViewModel
 
@@ -30,7 +30,7 @@ fun SearchResultScreen(
 
     Column(modifier = Modifier.fillMaxSize().background(Color.White)) {
 
-        // 🔹 Thanh tìm kiếm
+        // 🔍 Thanh tìm kiếm
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -57,7 +57,7 @@ fun SearchResultScreen(
             }
         }
 
-        // 🔹 Bộ lọc
+        // 📊 Bộ lọc
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -78,7 +78,7 @@ fun SearchResultScreen(
             }
         }
 
-        // 🔹 Bộ lọc giá
+        // 💰 Bộ lọc giá
         if (showPriceFilter) {
             Row(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
@@ -88,38 +88,40 @@ fun SearchResultScreen(
                     Text("Từ thấp đến cao", fontSize = 14.sp)
                 }
                 Button(onClick = { viewModel.onPriceSortSelected("Giá: Cao đến thấp") }) {
-                    Text("Từ cao đến cao", fontSize = 14.sp)
+                    Text("Từ cao đến thấp", fontSize = 14.sp)
                 }
             }
         }
 
-        // 🔹 Danh sách sản phẩm
+        // 📚 Danh sách sản phẩm
         LazyVerticalGrid(
             columns = GridCells.Fixed(2),
             modifier = Modifier.padding(8.dp),
             contentPadding = PaddingValues(8.dp)
         ) {
             items(viewModel.productList) { product ->
-                ProductItem(product)
+                ProductItem(product = product) {
+                    navController.navigate("product/${product.id}")
+                }
             }
         }
     }
 }
 
-// 🔹 UI sản phẩm
 @Composable
-fun ProductItem(product: Product) {
+fun ProductItem(product: Product, onClick: () -> Unit) {
     Column(
         modifier = Modifier
             .padding(8.dp)
             .background(Color.White, shape = RoundedCornerShape(8.dp))
             .fillMaxWidth()
             .border(1.dp, Color.LightGray, shape = RoundedCornerShape(8.dp))
+            .clickable { onClick() }
             .padding(8.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Image(
-            painter = painterResource(id = product.image),
+        AsyncImage(
+            model = product.imageUrl,
             contentDescription = product.name,
             modifier = Modifier.size(100.dp)
         )
@@ -128,3 +130,4 @@ fun ProductItem(product: Product) {
         Text(text = "Đã bán ${product.sold}", fontSize = 12.sp, color = Color.Gray)
     }
 }
+

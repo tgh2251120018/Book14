@@ -29,16 +29,14 @@ fun CategoryListScreen(
     categoryName: String,
     viewModel: CategoryListViewModel = viewModel()
 ) {
-    // Lấy danh sách sách từ ViewModel (StateFlow)
     val books by viewModel.books.collectAsState()
 
-    // Load danh sách theo danh mục khi màn hình hiển thị
     LaunchedEffect(categoryName) {
         viewModel.loadBooksByCategory(categoryName)
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        // 🔹 Header nền xanh
+        // 🔷 Header nền xanh
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -46,12 +44,12 @@ fun CategoryListScreen(
                 .background(Color(0xFF3F51B5))
         )
 
-        // 🔹 Thanh tìm kiếm (có thể tái sử dụng lại nếu bạn có CategorySearchBar riêng)
+        // 🔍 Thanh tìm kiếm có thể tái sử dụng
         CategorySearchBar(navController)
 
         Spacer(modifier = Modifier.height(10.dp))
 
-        // 🔹 Tiêu đề danh mục
+        // 🔖 Tiêu đề danh mục
         Text(
             text = "Danh mục: $categoryName",
             fontSize = 20.sp,
@@ -59,12 +57,12 @@ fun CategoryListScreen(
             modifier = Modifier.padding(16.dp)
         )
 
-        // 🔹 Danh sách sách
+        // 📚 Danh sách sách
         LazyColumn(modifier = Modifier.padding(16.dp)) {
             items(books) { book ->
-                BookItem(book = book, onClick = {
-                    navController.navigate("productDetail/${book.id}")
-                })
+                BookItem(book = book) {
+                    navController.navigate("product/${book.id}") // ✅ Route đúng để hiển thị ProductScreen.kt
+                }
             }
         }
     }
@@ -87,13 +85,13 @@ fun BookItem(book: Book, onClick: () -> Unit) {
                 .data(book.imageUrl)
                 .crossfade(true)
                 .build(),
-            contentDescription = book.name, // ✅ Đổi từ title → name
+            contentDescription = book.name,
             modifier = Modifier.size(80.dp)
         )
         Spacer(modifier = Modifier.width(16.dp))
         Column {
-            Text(text = book.name, fontWeight = FontWeight.Bold, fontSize = 16.sp) // ✅ Sửa title → name
-            Text(text = "${book.price.toInt()}đ", color = Color.Red, fontSize = 14.sp) // ✅ Sửa kiểu Double → String
+            Text(text = book.name, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+            Text(text = "${book.price.toInt()}đ", color = Color.Red, fontSize = 14.sp)
         }
     }
 }

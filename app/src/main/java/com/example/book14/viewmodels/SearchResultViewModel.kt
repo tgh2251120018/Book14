@@ -3,7 +3,6 @@ package com.example.book14.viewmodels
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import com.example.book14.R
 
 class SearchResultViewModel : ViewModel() {
 
@@ -28,11 +27,17 @@ class SearchResultViewModel : ViewModel() {
     }
 
     val productList = listOf(
-        Product("Boxset Harry Potter", 1571501, R.drawable.book, 86),
-        Product("Harry Potter - Chiếc Cốc Lửa", 885500, R.drawable.book, 20),
-        Product("Harry Potter - Tập 3", 765000, R.drawable.book, 42),
-        Product("Harry Potter - Tập 2", 590000, R.drawable.book, 30)
+        Product("1", "Boxset Harry Potter", 1571501, "https://example.com/harry1.jpg", 86),
+        Product("2", "Harry Potter - Chiếc Cốc Lửa", 885500, "https://example.com/harry2.jpg", 20),
+        Product("3", "Harry Potter - Tập 3", 765000, "https://example.com/harry3.jpg", 42),
+        Product("4", "Harry Potter - Tập 2", 590000, "https://example.com/harry4.jpg", 30)
     )
 }
 
-data class Product(val name: String, val price: Int, val image: Int, val sold: Int)
+data class Product(
+    val id: String,
+    val name: String,
+    val price: Int,
+    val imageUrl: String,
+    val sold: Int
+)

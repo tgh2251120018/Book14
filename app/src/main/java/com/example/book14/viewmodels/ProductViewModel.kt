@@ -17,7 +17,7 @@ class ProductViewModel : ViewModel() {
             _uiState.value = Book(
                 id = productId,
                 name = "Việt Nam - Lãnh Thổ Và Các Vùng Địa Lý",
-                price = 203652.0.toString(),
+                price = 203652.0,
                 originalPrice = 260000.0,
                 discountPercent = 22,
                 imageUrl = "https://cdn0.fahasa.com/media/catalog/product/v/i/viet-nam---lanh-tho-va-cac-vung-dia-ly_1.jpg",

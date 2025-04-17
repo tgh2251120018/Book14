@@ -26,8 +26,14 @@ fun AccountScreen(navController: NavController, viewModel: AccountViewModel = vi
     val settings by viewModel.settingItems.collectAsState()
     val username by viewModel.username.collectAsState()
 
+    LaunchedEffect(Unit) {
+        viewModel.loadUsernameFromFirebase()
+    }
+
     Box(
-        modifier = Modifier.fillMaxSize().background(Color.White)
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.White)
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
             // 🔹 Nền xanh phía trên
@@ -38,7 +44,7 @@ fun AccountScreen(navController: NavController, viewModel: AccountViewModel = vi
                     .background(Color(0xFF3F51B5))
             )
 
-            AccountHeader(navController, username)
+            AccountHeader(navController, username, viewModel)
             AccountSettingsList(settings)
         }
 
@@ -52,9 +58,8 @@ fun AccountScreen(navController: NavController, viewModel: AccountViewModel = vi
     }
 }
 
-// 🔹 Header
 @Composable
-fun AccountHeader(navController: NavController, username: String) {
+fun AccountHeader(navController: NavController, username: String, viewModel: AccountViewModel) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -65,7 +70,14 @@ fun AccountHeader(navController: NavController, username: String) {
             modifier = Modifier
                 .size(80.dp)
                 .background(Color.LightGray, shape = CircleShape)
-                .border(2.dp, Color.Gray, shape = CircleShape),
+                .border(2.dp, Color.Gray, shape = CircleShape)
+                .clickable {
+                    if (viewModel.isUserLoggedIn()) {
+                        navController.navigate("account_detail")
+                    } else {
+                        navController.navigate("login")
+                    }
+                },
             contentAlignment = Alignment.Center
         ) {
             Icon(
@@ -78,18 +90,9 @@ fun AccountHeader(navController: NavController, username: String) {
 
         Spacer(modifier = Modifier.height(8.dp))
         Text(text = "Chào mừng $username!", fontSize = 16.sp, fontWeight = FontWeight.Bold)
-
-        Button(
-            onClick = { navController.navigate("login") },
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF3F51B5)),
-            modifier = Modifier.padding(top = 4.dp)
-        ) {
-            Text(text = "Đăng nhập/Đăng ký", color = Color.White)
-        }
     }
 }
 
-// 🔹 Danh sách cài đặt
 @Composable
 fun AccountSettingsList(settings: List<AccountSettingItemData>) {
     Column(
@@ -120,7 +123,6 @@ fun AccountSettingItem(title: String, icon: ImageVector) {
     }
 }
 
-// 🔹 Bottom Nav
 @Composable
 fun AccountNavigationBar(navController: NavController) {
     NavigationBar(

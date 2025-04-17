@@ -6,10 +6,18 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
 data class AccountSettingItemData(val title: String, val icon: ImageVector)
 
 class AccountViewModel : ViewModel() {
+
+    private val auth = FirebaseAuth.getInstance()
+    private val db = FirebaseFirestore.getInstance()
 
     private val _username = MutableStateFlow("bạn")
     val username: StateFlow<String> = _username
@@ -27,5 +35,22 @@ class AccountViewModel : ViewModel() {
     )
     val settingItems: StateFlow<List<AccountSettingItemData>> = _settingItems
 
-    // 🛠 Có thể thêm hàm cập nhật username nếu bạn dùng Firebase Auth hoặc API sau này.
+    fun loadUsernameFromFirebase() {
+        val user = auth.currentUser
+        if (user != null) {
+            viewModelScope.launch {
+                try {
+                    val snapshot = db.collection("users").document(user.uid).get().await()
+                    val name = snapshot.getString("username") ?: "bạn"
+                    _username.value = name
+                } catch (e: Exception) {
+                    _username.value = "bạn"
+                }
+            }
+        }
+    }
+
+    fun isUserLoggedIn(): Boolean {
+        return auth.currentUser != null
+    }
 }

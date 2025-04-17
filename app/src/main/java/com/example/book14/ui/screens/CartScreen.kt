@@ -1,7 +1,7 @@
 package com.example.book14.ui.screens
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -14,15 +14,16 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.example.book14.viewmodels.CartItem
 import com.example.book14.viewmodels.CartViewModel
-import com.example.book14.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -54,7 +55,13 @@ fun CartScreen(navController: NavController, viewModel: CartViewModel = viewMode
                         contentPadding = PaddingValues(16.dp)
                     ) {
                         items(cartItems) { item ->
-                            CartItemRow(item, onRemove = { viewModel.removeItem(item) })
+                            CartItemRow(
+                                item = item,
+                                onRemove = { viewModel.removeItem(item) },
+                                onClick = {
+                                    navController.navigate("product/${item.id}")
+                                }
+                            )
                         }
                     }
                     CheckoutSection(viewModel.getTotalPrice())
@@ -65,34 +72,21 @@ fun CartScreen(navController: NavController, viewModel: CartViewModel = viewMode
 }
 
 @Composable
-fun EmptyCartSection() {
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Image(
-            painter = painterResource(id = R.drawable.categories),
-            contentDescription = "Empty Cart",
-            modifier = Modifier.size(120.dp)
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(text = "Giỏ hàng trống", fontSize = 18.sp, fontWeight = FontWeight.Bold)
-        Text(text = "Thêm sản phẩm vào giỏ để tiếp tục mua sắm!", fontSize = 14.sp, color = Color.Gray)
-    }
-}
-
-@Composable
-fun CartItemRow(item: CartItem, onRemove: () -> Unit) {
+fun CartItemRow(item: CartItem, onRemove: () -> Unit, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .clickable { onClick() }
             .padding(vertical = 8.dp)
             .background(Color.White, shape = RoundedCornerShape(8.dp))
-            .padding(12.dp)
+            .padding(12.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Image(
-            painter = painterResource(id = item.imageRes),
+        AsyncImage(
+            model = ImageRequest.Builder(LocalContext.current)
+                .data(item.imageUrl)
+                .crossfade(true)
+                .build(),
             contentDescription = item.name,
             modifier = Modifier.size(80.dp)
         )
@@ -104,6 +98,22 @@ fun CartItemRow(item: CartItem, onRemove: () -> Unit) {
         IconButton(onClick = onRemove) {
             Icon(Icons.Filled.Delete, contentDescription = "Remove", tint = Color.Gray)
         }
+    }
+}
+
+@Composable
+fun EmptyCartSection() {
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(text = "Giỏ hàng trống", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+        Text(
+            text = "Thêm sản phẩm vào giỏ để tiếp tục mua sắm!",
+            fontSize = 14.sp,
+            color = Color.Gray
+        )
     }
 }
 
@@ -121,7 +131,12 @@ fun CheckoutSection(totalPrice: Int) {
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(text = "Tổng cộng:", fontSize = 18.sp, fontWeight = FontWeight.Bold)
-            Text(text = "${totalPrice}đ", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.Red)
+            Text(
+                text = "${totalPrice}đ",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.Red
+            )
         }
         Spacer(modifier = Modifier.height(12.dp))
         Button(

@@ -16,6 +16,7 @@ import androidx.navigation.NavController
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.rememberNavController
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.AsyncImage
 import com.example.book14.viewmodels.OrderViewModel
 import com.example.book14.viewmodels.OrderStatus
 import com.example.book14.viewmodels.BookSuggestion
@@ -44,7 +45,7 @@ fun OrderScreen(navController: NavController, viewModel: OrderViewModel = viewMo
 
             OrderTrackingBar(statuses)
             DeliveryIcon()
-            RecommendedBooks(suggestedBooks)
+            RecommendedBooks(suggestedBooks, navController)
         }
 
         Box(
@@ -88,7 +89,7 @@ fun DeliveryIcon() {
 }
 
 @Composable
-fun RecommendedBooks(suggestedBooks: List<BookSuggestion>) {
+fun RecommendedBooks(suggestedBooks: List<BookSuggestion>, navController: NavController) {
     Column(modifier = Modifier.padding(16.dp)) {
         Text(text = "Bạn có thể thích", fontSize = 18.sp, fontWeight = FontWeight.Bold)
 
@@ -100,32 +101,34 @@ fun RecommendedBooks(suggestedBooks: List<BookSuggestion>) {
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             suggestedBooks.forEach { book ->
-                BookItem(book)
+                BookItem(book, navController)
             }
         }
     }
 }
 
 @Composable
-fun BookItem(book: BookSuggestion) {
+fun BookItem(book: BookSuggestion, navController: NavController) {
     Column(
         modifier = Modifier
             .width(120.dp)
+            .clickable {
+                navController.navigate("product/${book.id}")
+            }
             .background(Color.White, shape = RoundedCornerShape(8.dp))
             .border(1.dp, Color.Gray, shape = RoundedCornerShape(8.dp))
             .padding(8.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Icon(
-            imageVector = Icons.Filled.Book,
-            contentDescription = "Book Placeholder",
-            tint = Color.Gray,
+        AsyncImage(
+            model = book.imageUrl,
+            contentDescription = book.title,
             modifier = Modifier
                 .size(80.dp)
                 .background(Color.LightGray, shape = RoundedCornerShape(8.dp))
         )
         Spacer(modifier = Modifier.height(4.dp))
-        Text(text = book.title, fontSize = 14.sp, fontWeight = FontWeight.Medium)
+        Text(text = book.title, fontSize = 14.sp, fontWeight = FontWeight.Medium, maxLines = 2)
         Text(text = book.price, fontSize = 12.sp, color = Color.Red, fontWeight = FontWeight.Bold)
     }
 }

@@ -13,26 +13,8 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.book14.ui.screens.AccountScreen
-import com.example.book14.ui.screens.CartScreen
-import com.example.book14.ui.screens.CategoryListScreen
-import com.example.book14.ui.screens.CategoryScreen
-import com.example.book14.ui.screens.HomeScreen
-import com.example.book14.ui.screens.LoginScreen
-import com.example.book14.ui.screens.OrderScreen
-import com.example.book14.ui.screens.SearchResultScreen
-import com.example.book14.ui.screens.SearchScreen
-import com.example.book14.ui.screens.SignUpScreen
-import com.example.book14.viewmodels.AccountViewModel
-import com.example.book14.viewmodels.CartViewModel
-import com.example.book14.viewmodels.CategoryListViewModel
-import com.example.book14.viewmodels.CategoryViewModel
-import com.example.book14.viewmodels.HomeViewModel
-import com.example.book14.viewmodels.LoginViewModel
-import com.example.book14.viewmodels.OrderViewModel
-import com.example.book14.viewmodels.SearchResultViewModel
-import com.example.book14.viewmodels.SearchViewModel
-import com.example.book14.viewmodels.SignUpViewModel
+import com.example.book14.ui.screens.*
+import com.example.book14.viewmodels.*
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.FirebaseApp
@@ -41,7 +23,7 @@ import com.google.firebase.auth.GoogleAuthProvider
 
 class MainActivity : ComponentActivity() {
     private lateinit var auth: FirebaseAuth
-    private lateinit var loginViewModel: LoginViewModel // Khai báo ViewModel tại đây để sử dụng chung
+    private lateinit var loginViewModel: LoginViewModel
 
     private val googleSignInLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
@@ -50,19 +32,17 @@ class MainActivity : ComponentActivity() {
             val credential = GoogleAuthProvider.getCredential(account.idToken, null)
             auth.signInWithCredential(credential).addOnCompleteListener { authResult ->
                 if (authResult.isSuccessful) {
-                    // Đăng nhập thành công, lưu thông tin người dùng
                     val user = auth.currentUser
                     loginViewModel.saveUserToFirestore(
                         userId = user?.uid ?: "",
                         email = user?.email,
                         displayName = user?.displayName
                     )
-                    // Điều hướng về màn hình chính sau khi đăng nhập thành công
                     val intent = Intent(this, MainActivity::class.java).apply {
                         putExtra("navigateTo", "home")
                     }
                     startActivity(intent)
-                    finish() // Kết thúc activity hiện tại để tránh quay lại màn hình đăng nhập
+                    finish()
                 } else {
                     loginViewModel.errorMessage.value = "Đăng nhập thất bại"
                 }
@@ -76,13 +56,12 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         FirebaseApp.initializeApp(this)
         auth = FirebaseAuth.getInstance()
-        loginViewModel = LoginViewModel() // Khởi tạo ViewModel một lần duy nhất
+        loginViewModel = LoginViewModel()
 
-        // Kiểm tra trạng thái đăng nhập ban đầu
         val startDestination = if (auth.currentUser != null) {
-            "home" // Nếu đã đăng nhập, đi thẳng đến home
+            "home"
         } else {
-            intent.getStringExtra("navigateTo") ?: "home" // Nếu không, kiểm tra intent hoặc mặc định là home
+            intent.getStringExtra("navigateTo") ?: "home"
         }
 
         enableEdgeToEdge()
@@ -94,7 +73,8 @@ class MainActivity : ComponentActivity() {
 
     private fun startGoogleSignIn() {
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken("YOUR_WEB_CLIENT_ID") // Thay bằng Web client ID từ Firebase Console
+            .requestIdToken("938659721356-avl7c5409lt31m970f985sp96al965lo.apps.googleusercontent.com") // Tạo string resource nếu cần
+            // Replace with real Web Client ID
             .requestEmail()
             .build()
 
@@ -107,7 +87,11 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun AppNavigation(navController: NavHostController, startGoogleSignIn: () -> Unit = {}, startDestination: String = "home") {
+fun AppNavigation(
+    navController: NavHostController,
+    startGoogleSignIn: () -> Unit = {},
+    startDestination: String = "home"
+) {
     NavHost(navController, startDestination = startDestination) {
         composable("home") {
             val viewModel: HomeViewModel = viewModel()
@@ -135,6 +119,14 @@ fun AppNavigation(navController: NavHostController, startGoogleSignIn: () -> Uni
             val viewModel: SearchResultViewModel = viewModel()
             SearchResultScreen(navController, query, viewModel)
         }
+        composable("product/{productId}") { backStackEntry ->
+            val productId = backStackEntry.arguments?.getString("productId") ?: ""
+            ProductScreen(
+                productId = productId,
+                onBackClick = { navController.popBackStack() },
+                onCartClick = { navController.navigate("cart") }
+            )
+        }
         composable("orders") {
             val viewModel: OrderViewModel = viewModel()
             OrderScreen(navController, viewModel)
@@ -150,6 +142,10 @@ fun AppNavigation(navController: NavHostController, startGoogleSignIn: () -> Uni
         composable("signup") {
             val viewModel: SignUpViewModel = viewModel()
             SignUpScreen(navController, viewModel, startGoogleSignIn)
+        }
+        composable("account_detail") {
+            val viewModel: AccountDetailViewModel = viewModel()
+            AccountDetailScreen(navController, viewModel)
         }
     }
 }
