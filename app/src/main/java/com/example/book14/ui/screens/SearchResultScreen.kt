@@ -6,8 +6,7 @@ import androidx.compose.foundation.lazy.grid.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.graphics.Color
@@ -26,7 +25,7 @@ fun SearchResultScreen(
     viewModel: SearchResultViewModel = viewModel()
 ) {
     val selectedFilter by viewModel.selectedFilter.collectAsState()
-    val showPriceFilter by viewModel.showPriceFilter.collectAsState()
+    val priceSortAsc by viewModel.priceSortAsc.collectAsState()
 
     Column(modifier = Modifier.fillMaxSize().background(Color.White)) {
 
@@ -66,29 +65,35 @@ fun SearchResultScreen(
         ) {
             val filters = listOf("Phổ biến", "Bán chạy", "Mới nhất", "Giá")
             filters.forEach { filter ->
-                Button(
-                    onClick = { viewModel.onFilterSelected(filter) },
-                    colors = ButtonDefaults.buttonColors(
-                        backgroundColor = if (selectedFilter == filter) Color.Red else Color.LightGray
-                    ),
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    Text(text = filter, color = Color.White, fontSize = 14.sp)
-                }
-            }
-        }
-
-        // 💰 Bộ lọc giá
-        if (showPriceFilter) {
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                Button(onClick = { viewModel.onPriceSortSelected("Giá: Thấp đến cao") }) {
-                    Text("Từ thấp đến cao", fontSize = 14.sp)
-                }
-                Button(onClick = { viewModel.onPriceSortSelected("Giá: Cao đến thấp") }) {
-                    Text("Từ cao đến thấp", fontSize = 14.sp)
+                if (filter == "Giá") {
+                    Button(
+                        onClick = { viewModel.onPriceSortSelected() },
+                        colors = ButtonDefaults.buttonColors(
+                            backgroundColor = if (selectedFilter.contains("Giá")) Color.Red else Color.LightGray
+                        ),
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(text = "Giá", color = Color.White, fontSize = 14.sp)
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Icon(
+                                imageVector = if (priceSortAsc) Icons.Default.ArrowUpward else Icons.Default.ArrowDownward,
+                                contentDescription = "Sort",
+                                tint = Color.White,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+                    }
+                } else {
+                    Button(
+                        onClick = { viewModel.onFilterSelected(filter) },
+                        colors = ButtonDefaults.buttonColors(
+                            backgroundColor = if (selectedFilter == filter) Color.Red else Color.LightGray
+                        ),
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Text(text = filter, color = Color.White, fontSize = 14.sp)
+                    }
                 }
             }
         }
@@ -130,4 +135,3 @@ fun ProductItem(product: Product, onClick: () -> Unit) {
         Text(text = "Đã bán ${product.sold}", fontSize = 12.sp, color = Color.Gray)
     }
 }
-

@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package com.example.book14
 
 import android.content.Intent

@@ -139,12 +139,12 @@ fun BookCategories() {
         "Top deal" to Icons.Outlined.ThumbUp,
         "Giảm giá" to Icons.Outlined.AttachMoney,
         "Ngoại văn" to Icons.Outlined.MenuBook,
-        "Bán chạy" to Icons.Outlined.ShoppingCart,
-        "Nhà xuất bản" to Icons.Outlined.Business,
-        "Khác" to Icons.Outlined.MoreHoriz,
         "Sách mới" to Icons.Outlined.NewReleases,
         "Tâm lý" to Icons.Outlined.Psychology,
-        "Kinh doanh" to Icons.Outlined.Work
+        "Kinh doanh" to Icons.Outlined.Work,
+        "Bán chạy" to Icons.Outlined.ShoppingCart,
+        "Nhà xuất bản" to Icons.Outlined.Business,
+        "Khác" to Icons.Outlined.MoreHoriz
     )
 
     Column(
