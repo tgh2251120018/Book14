@@ -85,7 +85,7 @@ fun LoginScreen(
                     horizontalArrangement = Arrangement.Center
                 ) {
                     Icon(
-                        painter = painterResource(id = R.drawable.categories),
+                        painter = painterResource(id = R.drawable.icondn),
                         contentDescription = "Google",
                         tint = Color.Unspecified,
                         modifier = Modifier.size(24.dp)
