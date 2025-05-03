@@ -1,35 +1,18 @@
 package com.example.book14.ui.screens
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
 import com.example.book14.viewmodels.AccountDetailViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -42,6 +25,7 @@ fun AccountDetailScreen(
     val email by viewModel.email
     val address by viewModel.address
     val phoneNumber by viewModel.phoneNumber
+    val avatarUrl by viewModel.avatarUrl
     val loading by viewModel.loading
     val message by viewModel.message
 
@@ -62,9 +46,10 @@ fun AccountDetailScreen(
         }
     ) { innerPadding ->
         if (loading) {
-            Box(modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding),
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding),
                 contentAlignment = Alignment.Center
             ) {
                 CircularProgressIndicator()
@@ -76,6 +61,25 @@ fun AccountDetailScreen(
                     .padding(innerPadding)
                     .padding(16.dp)
             ) {
+                // 🔥 Avatar preview
+                AsyncImage(
+                    model = avatarUrl,
+                    contentDescription = "Avatar",
+                    modifier = Modifier
+                        .size(100.dp)
+                        .align(Alignment.CenterHorizontally)
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // 🔥 Link nhập avatar
+                OutlinedTextField(
+                    value = avatarUrl,
+                    onValueChange = { viewModel.updateAvatarUrl(it) },
+                    label = { Text("Link hình đại diện") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+
                 OutlinedTextField(
                     value = username,
                     onValueChange = { viewModel.username.value = it },
@@ -121,8 +125,8 @@ fun AccountDetailScreen(
                 Button(
                     onClick = {
                         viewModel.signOut()
-                        navController.navigate("login") {
-                            popUpTo("accountDetail") { inclusive = true } // Xoá khỏi backstack
+                        navController.navigate("home") {
+                            popUpTo("account") { inclusive = true }
                         }
                     },
                     modifier = Modifier.fillMaxWidth(),
@@ -138,7 +142,6 @@ fun AccountDetailScreen(
                         color = MaterialTheme.colorScheme.primary
                     )
                 }
-
             }
         }
     }

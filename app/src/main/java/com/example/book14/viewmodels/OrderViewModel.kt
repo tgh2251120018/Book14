@@ -1,11 +1,16 @@
 package com.example.book14.viewmodels
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.ui.graphics.vector.ImageVector
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
+import kotlin.random.Random
 
 data class OrderStatus(val label: String, val icon: ImageVector)
 data class BookSuggestion(
@@ -16,6 +21,8 @@ data class BookSuggestion(
 )
 
 class OrderViewModel : ViewModel() {
+
+    private val db = FirebaseFirestore.getInstance()
 
     private val _orderStatuses = MutableStateFlow(
         listOf(
@@ -28,27 +35,35 @@ class OrderViewModel : ViewModel() {
     )
     val orderStatuses: StateFlow<List<OrderStatus>> = _orderStatuses
 
-    private val _suggestedBooks = MutableStateFlow(
-        listOf(
-            BookSuggestion(
-                id = "1",
-                title = "Giáo trình A",
-                price = "99.000đ",
-                imageUrl = "https://cdn0.fahasa.com/media/catalog/product/g/i/giaotrinh_a.jpg"
-            ),
-            BookSuggestion(
-                id = "2",
-                title = "Tâm lý học B",
-                price = "79.000đ",
-                imageUrl = "https://cdn0.fahasa.com/media/catalog/product/t/a/tamlyhoc_b.jpg"
-            ),
-            BookSuggestion(
-                id = "3",
-                title = "Kinh tế học C",
-                price = "129.000đ",
-                imageUrl = "https://cdn0.fahasa.com/media/catalog/product/k/i/kinhtehoc_c.jpg"
-            )
-        )
-    )
+    private val _suggestedBooks = MutableStateFlow<List<BookSuggestion>>(emptyList())
     val suggestedBooks: StateFlow<List<BookSuggestion>> = _suggestedBooks
+
+    init {
+        loadSuggestedBooks()
+    }
+
+    private fun loadSuggestedBooks() {
+        viewModelScope.launch {
+            try {
+                val snapshot = db.collection("products").get().await()
+                val books = snapshot.documents.mapNotNull { doc ->
+                    val id = doc.getString("productId") ?: return@mapNotNull null
+                    val title = doc.getString("name") ?: return@mapNotNull null
+                    val price = doc.getLong("price")?.toString()?.plus("đ") ?: "0đ"
+                    val imageUrl = doc.getString("imageUrl") ?: ""
+
+                    BookSuggestion(
+                        id = id,
+                        title = title,
+                        price = price,
+                        imageUrl = imageUrl
+                    )
+                }.shuffled(Random(System.currentTimeMillis())) // 🔥 Xáo trộn random
+
+                _suggestedBooks.value = books
+            } catch (e: Exception) {
+                _suggestedBooks.value = emptyList()
+            }
+        }
+    }
 }

@@ -2,36 +2,18 @@ package com.example.book14.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
+import androidx.compose.material.icons.filled.Remove
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.*
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -43,11 +25,16 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.book14.viewmodels.CartItem
 import com.example.book14.viewmodels.CartViewModel
+import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CartScreen(navController: NavController, viewModel: CartViewModel = viewModel()) {
     val cartItems by viewModel.cartItems.collectAsState()
+    val loading by viewModel.loading.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
 
     Scaffold(
         topBar = {
@@ -60,30 +47,44 @@ fun CartScreen(navController: NavController, viewModel: CartViewModel = viewMode
                 }
             )
         },
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         content = { padding ->
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding)
-            ) {
-                if (cartItems.isEmpty()) {
-                    EmptyCartSection()
-                } else {
-                    LazyColumn(
-                        modifier = Modifier.weight(1f),
-                        contentPadding = PaddingValues(16.dp)
-                    ) {
-                        items(cartItems) { item ->
-                            CartItemRow(
-                                item = item,
-                                onRemove = { viewModel.removeItem(item) },
-                                onClick = {
-                                    navController.navigate("product/${item.id}")
-                                }
-                            )
+            if (loading) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
+            } else {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(padding)
+                ) {
+                    if (cartItems.isEmpty()) {
+                        EmptyCartSection()
+                    } else {
+                        LazyColumn(
+                            modifier = Modifier.weight(1f),
+                            contentPadding = PaddingValues(16.dp)
+                        ) {
+                            items(cartItems) { item ->
+                                CartItemRow(
+                                    item = item,
+                                    onRemove = {
+                                        viewModel.removeItem(item.cartId)
+                                        coroutineScope.launch {
+                                            snackbarHostState.showSnackbar("Đã xóa sản phẩm khỏi giỏ!")
+                                        }
+                                    },
+                                    onIncrease = { viewModel.updateQuantity(item, item.quantity + 1) },
+                                    onDecrease = { viewModel.updateQuantity(item, item.quantity - 1) },
+                                    onClick = {
+                                        navController.navigate("product/${item.productId}")
+                                    }
+                                )
+                            }
                         }
+                        CheckoutSection(viewModel.getTotalPrice(), navController)
                     }
-                    CheckoutSection(viewModel.getTotalPrice())
                 }
             }
         }
@@ -91,7 +92,13 @@ fun CartScreen(navController: NavController, viewModel: CartViewModel = viewMode
 }
 
 @Composable
-fun CartItemRow(item: CartItem, onRemove: () -> Unit, onClick: () -> Unit) {
+fun CartItemRow(
+    item: CartItem,
+    onRemove: () -> Unit,
+    onIncrease: () -> Unit,
+    onDecrease: () -> Unit,
+    onClick: () -> Unit
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -113,6 +120,18 @@ fun CartItemRow(item: CartItem, onRemove: () -> Unit, onClick: () -> Unit) {
         Column(modifier = Modifier.weight(1f)) {
             Text(text = item.name, fontSize = 16.sp, fontWeight = FontWeight.Bold)
             Text(text = "${item.price}đ", fontSize = 14.sp, color = Color.Red)
+
+            Spacer(Modifier.height(4.dp))
+
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                IconButton(onClick = onDecrease, enabled = item.quantity > 1) {
+                    Icon(Icons.Filled.Remove, contentDescription = "Giảm")
+                }
+                Text(text = "${item.quantity}", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                IconButton(onClick = onIncrease) {
+                    Icon(Icons.Filled.Add, contentDescription = "Tăng")
+                }
+            }
         }
         IconButton(onClick = onRemove) {
             Icon(Icons.Filled.Delete, contentDescription = "Remove", tint = Color.Gray)
@@ -137,7 +156,7 @@ fun EmptyCartSection() {
 }
 
 @Composable
-fun CheckoutSection(totalPrice: Int) {
+fun CheckoutSection(totalPrice: Int, navController: NavController) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -159,7 +178,14 @@ fun CheckoutSection(totalPrice: Int) {
         }
         Spacer(modifier = Modifier.height(12.dp))
         Button(
-            onClick = { /* TODO: Xử lý thanh toán */ },
+            onClick = {
+                val user = FirebaseAuth.getInstance().currentUser
+                if (user != null) {
+                    navController.navigate("payment")
+                } else {
+                    navController.navigate("login")
+                }
+            },
             modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF3F51B5))
         ) {

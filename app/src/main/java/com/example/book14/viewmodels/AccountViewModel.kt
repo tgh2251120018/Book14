@@ -22,6 +22,9 @@ class AccountViewModel : ViewModel() {
     private val _username = MutableStateFlow("bạn")
     val username: StateFlow<String> = _username
 
+    private val _avatarUrl = MutableStateFlow("")
+    val avatarUrl: StateFlow<String> = _avatarUrl
+
     private val _settingItems = MutableStateFlow(
         listOf(
             AccountSettingItemData("Tài khoản & Bảo mật", Icons.Filled.Lock),
@@ -42,11 +45,18 @@ class AccountViewModel : ViewModel() {
                 try {
                     val snapshot = db.collection("users").document(user.uid).get().await()
                     val name = snapshot.getString("username") ?: "bạn"
+                    val avatar = snapshot.getString("avatarUrl") ?: ""
+
                     _username.value = name
+                    _avatarUrl.value = avatar
                 } catch (e: Exception) {
                     _username.value = "bạn"
+                    _avatarUrl.value = ""
                 }
             }
+        } else {
+            _username.value = "bạn"
+            _avatarUrl.value = ""
         }
     }
 

@@ -23,6 +23,9 @@ import coil.compose.AsyncImage
 import com.example.book14.viewmodels.OrderViewModel
 import com.example.book14.viewmodels.OrderStatus
 import com.example.book14.viewmodels.BookSuggestion
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 
 @Composable
 fun OrderScreen(navController: NavController, viewModel: OrderViewModel = viewModel()) {
@@ -158,14 +161,14 @@ fun RecommendedBooks(suggestedBooks: List<BookSuggestion>, navController: NavCon
             modifier = Modifier.padding(bottom = 8.dp)
         )
 
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .horizontalScroll(rememberScrollState())
-                .padding(top = 10.dp),
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(2),
+            modifier = Modifier.fillMaxHeight(),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            contentPadding = PaddingValues(bottom = 80.dp)
         ) {
-            suggestedBooks.forEach { book ->
+            items(suggestedBooks) { book ->
                 BookItem(book, navController)
             }
         }

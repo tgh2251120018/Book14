@@ -27,12 +27,13 @@ import com.example.book14.viewmodels.CategoryListViewModel
 fun CategoryListScreen(
     navController: NavController,
     categoryName: String,
+    categoryId: String, // ✅ Thêm categoryId
     viewModel: CategoryListViewModel = viewModel()
 ) {
     val books by viewModel.books.collectAsState()
 
-    LaunchedEffect(categoryName) {
-        viewModel.loadBooksByCategory(categoryName)
+    LaunchedEffect(categoryId) {
+        viewModel.loadBooksByCategory(categoryId)
     }
 
     Column(modifier = Modifier.fillMaxSize()) {

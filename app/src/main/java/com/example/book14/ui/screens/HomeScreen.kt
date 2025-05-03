@@ -196,7 +196,7 @@ fun BookCategories() {
     val categories = listOf(
         "Top deal" to Icons.Outlined.ThumbUp,
         "Giảm giá" to Icons.Outlined.AttachMoney,
-        "Ngoại văn" to Icons.AutoMirrored.Outlined.MenuBook,
+        "Ngoại ngữ" to Icons.AutoMirrored.Outlined.MenuBook,
         "Sách mới" to Icons.Outlined.NewReleases,
         "Tâm lý" to Icons.Outlined.Psychology,
         "Kinh doanh" to Icons.Outlined.Work,

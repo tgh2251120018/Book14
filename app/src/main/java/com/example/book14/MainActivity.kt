@@ -103,10 +103,10 @@ fun AppNavigation(
             val viewModel: CategoryViewModel = viewModel()
             CategoryScreen(navController, viewModel)
         }
-        composable("category_list/{categoryName}") { backStackEntry ->
-            val categoryName = backStackEntry.arguments?.getString("categoryName") ?: "Danh mục"
-            val viewModel: CategoryListViewModel = viewModel()
-            CategoryListScreen(navController, categoryName, viewModel)
+        composable("categoryList/{categoryName}/{categoryId}") { backStackEntry ->
+            val categoryName = backStackEntry.arguments?.getString("categoryName") ?: ""
+            val categoryId = backStackEntry.arguments?.getString("categoryId") ?: ""
+            CategoryListScreen(navController, categoryName, categoryId)
         }
         composable("search") {
             val viewModel: SearchViewModel = viewModel()
@@ -126,8 +126,17 @@ fun AppNavigation(
             ProductScreen(
                 productId = productId,
                 onBackClick = { navController.popBackStack() },
-                onCartClick = { navController.navigate("cart") }
+                onCartClick = { navController.navigate("cart") },
+                navController = navController
             )
+        }
+        composable("payment") {
+            val user = FirebaseAuth.getInstance().currentUser
+            if (user != null) {
+                PaymentScreen(navController)
+            } else {
+                navController.navigate("login")
+            }
         }
         composable("orders") {
             val viewModel: OrderViewModel = viewModel()

@@ -14,12 +14,12 @@ class SearchViewModel : ViewModel() {
     }
 
     val popularSearches = listOf(
-        "Sách kinh tế", "Tâm lý học", "Tiểu thuyết", "Lịch sử", "Sách thiếu nhi"
+        "Đắc nhân tâm", "Tâm lý học", "Sách giáo khoa", "Lịch sử", "Sách thiếu nhi"
     )
 
     val featuredCategories = listOf(
         "Kinh tế", "Tâm lý", "Thiếu nhi",
-        "Sức Khỏe", "Sách giáo khoa", "Ngoại văn",
-        "NXB Kim Đồng", "NXB Trẻ"
+        "Comic", "Sách giáo khoa", "Ngoại ngữ"
+
     )
 }

@@ -141,7 +141,7 @@ fun CategoryGrid(navController: NavController, categories: List<CategoryItem>) {
                             .shadow(4.dp, RoundedCornerShape(16.dp))
                             .background(Color.White, RoundedCornerShape(16.dp))
                             .clickable {
-                                navController.navigate("category_list/${item.label}")
+                                navController.navigate("categoryList/${item.label}/${item.categoryId}")
                             }
                             .padding(12.dp)
                     ) {

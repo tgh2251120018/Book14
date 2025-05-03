@@ -17,6 +17,7 @@ class AccountDetailViewModel : ViewModel() {
     val email = mutableStateOf("")
     val address = mutableStateOf("")
     val phoneNumber = mutableStateOf("")
+    val avatarUrl = mutableStateOf("")
     val message = mutableStateOf("")
     val loading = mutableStateOf(true)
 
@@ -30,6 +31,7 @@ class AccountDetailViewModel : ViewModel() {
                     email.value = snapshot.getString("email") ?: ""
                     address.value = snapshot.getString("address") ?: ""
                     phoneNumber.value = snapshot.getString("phoneNumber") ?: ""
+                    avatarUrl.value = snapshot.getString("avatarUrl") ?: ""
                     loading.value = false
                 } catch (e: Exception) {
                     message.value = "Lỗi tải dữ liệu: ${e.message}"
@@ -50,7 +52,8 @@ class AccountDetailViewModel : ViewModel() {
                         mapOf(
                             "username" to username.value,
                             "address" to address.value,
-                            "phoneNumber" to phoneNumber.value
+                            "phoneNumber" to phoneNumber.value,
+                            "avatarUrl" to avatarUrl.value
                         )
                     ).await()
                     message.value = "Cập nhật thành công!"
@@ -61,8 +64,11 @@ class AccountDetailViewModel : ViewModel() {
         }
     }
 
+    fun updateAvatarUrl(newUrl: String) {
+        avatarUrl.value = newUrl
+    }
+
     fun signOut() {
         auth.signOut()
     }
-
 }
