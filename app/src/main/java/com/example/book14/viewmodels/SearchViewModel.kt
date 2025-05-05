@@ -13,6 +13,12 @@ class SearchViewModel : ViewModel() {
         _searchText.value = text
     }
 
+    fun String.removeDiacritics(): String {
+        val regex = "\\p{InCombiningDiacriticalMarks}+".toRegex()
+        val normalized = java.text.Normalizer.normalize(this, java.text.Normalizer.Form.NFD)
+        return regex.replace(normalized, "")
+    }
+
     val popularSearches = listOf(
         "Đắc nhân tâm", "Tâm lý học", "Sách giáo khoa", "Lịch sử", "Sách thiếu nhi"
     )
@@ -20,6 +26,5 @@ class SearchViewModel : ViewModel() {
     val featuredCategories = listOf(
         "Kinh tế", "Tâm lý", "Thiếu nhi",
         "Comic", "Sách giáo khoa", "Ngoại ngữ"
-
     )
 }

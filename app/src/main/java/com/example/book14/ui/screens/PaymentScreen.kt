@@ -1,13 +1,42 @@
 package com.example.book14.ui.screens
 
-import androidx.compose.foundation.*
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.*
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -16,14 +45,22 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.example.book14.viewmodels.PaymentCartItem
 import com.example.book14.viewmodels.PaymentViewModel
+import com.example.book14.viewmodels.ProductViewModel
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PaymentScreen(navController: NavController, viewModel: PaymentViewModel = viewModel()) {
-    val cartItems by viewModel.cartItems.collectAsState()
-    val userInfo by viewModel.userInfo.collectAsState()
+fun PaymentScreen(
+    navController: NavController,
+    paymentViewModel: PaymentViewModel = viewModel(),
+    productViewModel: ProductViewModel = viewModel()
+) {
+    val selectedPurchase by productViewModel.selectedPurchase.collectAsState()
+    val currentSelectedPurchase = selectedPurchase
+    val cartItems by paymentViewModel.cartItems.collectAsState()
+    val userInfo by paymentViewModel.userInfo.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     var paymentMethod by remember { mutableStateOf("Thanh toán khi nhận hàng") }
@@ -32,8 +69,24 @@ fun PaymentScreen(navController: NavController, viewModel: PaymentViewModel = vi
     var showPaymentDialog by remember { mutableStateOf(false) }
     var showDeliveryDialog by remember { mutableStateOf(false) }
 
-    LaunchedEffect(Unit) {
-        viewModel.loadCartAndUserInfo()
+    LaunchedEffect(selectedPurchase) {
+        paymentViewModel.loadCartAndUserInfo(selectedPurchase)
+    }
+
+    val itemsToDisplay = remember(currentSelectedPurchase, cartItems) {
+        if (currentSelectedPurchase != null) {
+            listOf(
+                PaymentCartItem(
+                    productId = currentSelectedPurchase.product.productId,
+                    name = currentSelectedPurchase.product.name,
+                    imageUrl = currentSelectedPurchase.product.imageUrl,
+                    quantity = currentSelectedPurchase.quantity,
+                    price = currentSelectedPurchase.product.price
+                )
+            )
+        } else {
+            cartItems
+        }
     }
 
     Scaffold(
@@ -55,34 +108,29 @@ fun PaymentScreen(navController: NavController, viewModel: PaymentViewModel = vi
                     .background(Color.White)
                     .padding(16.dp)
             ) {
-                Row(
-                    Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                     Text("Tổng tiền", fontWeight = FontWeight.Bold)
-                    Text(
-                        text = "${viewModel.getTotal().toInt()}đ",
-                        color = Color.Red,
-                        fontWeight = FontWeight.Bold
-                    )
+                    Text("${paymentViewModel.getTotal().toInt()}đ", color = Color.Red, fontWeight = FontWeight.Bold)
                 }
                 Spacer(Modifier.height(12.dp))
                 Button(
                     onClick = {
-                        viewModel.placeOrder(
+                        paymentViewModel.placeOrder(
+                            paymentMethod,
+                            deliveryMethod,
+                            selectedPurchase,
                             onSuccess = {
+                                productViewModel.clearSelectedPurchase()
                                 navController.navigate("home") {
                                     popUpTo("cart") { inclusive = true }
                                 }
                             },
                             onFailure = {
-                                scope.launch {
-                                    snackbarHostState.showSnackbar("Lỗi: $it")
-                                }
+                                scope.launch { snackbarHostState.showSnackbar("Lỗi: $it") }
                             }
                         )
                     },
-                    enabled = cartItems.isNotEmpty(),
+                    enabled = itemsToDisplay.isNotEmpty(),
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
                 ) {
@@ -121,21 +169,15 @@ fun PaymentScreen(navController: NavController, viewModel: PaymentViewModel = vi
             ) {
                 Text("Sản phẩm", fontWeight = FontWeight.Bold)
                 Spacer(Modifier.height(8.dp))
-                cartItems.forEach { item ->
-                    Row(
-                        Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 8.dp)
-                    ) {
+                itemsToDisplay.forEach { item ->
+                    Row(Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
                         AsyncImage(
                             model = ImageRequest.Builder(LocalContext.current)
-                                .data(item.imageUrl)
-                                .crossfade(true)
-                                .build(),
+                                .data(item.imageUrl).crossfade(true).build(),
                             contentDescription = item.name,
                             modifier = Modifier
                                 .size(64.dp)
-                                .background(Color.LightGray, shape = RoundedCornerShape(4.dp))
+                                .background(Color.LightGray, RoundedCornerShape(4.dp))
                         )
                         Spacer(Modifier.width(12.dp))
                         Column(Modifier.weight(1f)) {
@@ -149,22 +191,18 @@ fun PaymentScreen(navController: NavController, viewModel: PaymentViewModel = vi
 
             Spacer(Modifier.height(8.dp))
 
-            // Phương thức giao hàng
+            // Giao hàng
             ListItem(
                 headlineContent = { Text("Phương thức giao hàng") },
                 supportingContent = { Text(deliveryMethod) },
-                modifier = Modifier
-                    .background(Color.White)
-                    .clickable { showDeliveryDialog = true }
+                modifier = Modifier.background(Color.White).clickable { showDeliveryDialog = true }
             )
 
-            // Phương thức thanh toán
+            // Thanh toán
             ListItem(
                 headlineContent = { Text("Phương thức thanh toán") },
                 supportingContent = { Text(paymentMethod) },
-                modifier = Modifier
-                    .background(Color.White)
-                    .clickable { showPaymentDialog = true }
+                modifier = Modifier.background(Color.White).clickable { showPaymentDialog = true }
             )
 
             Spacer(Modifier.height(8.dp))
@@ -178,15 +216,15 @@ fun PaymentScreen(navController: NavController, viewModel: PaymentViewModel = vi
             ) {
                 Text("Chi tiết thanh toán", fontWeight = FontWeight.Bold)
                 Spacer(Modifier.height(8.dp))
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Row(Modifier.fillMaxWidth(), Arrangement.SpaceBetween) {
                     Text("Tổng tiền hàng")
-                    Text("${viewModel.getTotal().toInt()}đ")
+                    Text("${paymentViewModel.getTotal().toInt()}đ")
                 }
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Row(Modifier.fillMaxWidth(), Arrangement.SpaceBetween) {
                     Text("Phí vận chuyển")
                     Text("Miễn phí", color = Color.Green)
                 }
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Row(Modifier.fillMaxWidth(), Arrangement.SpaceBetween) {
                     Text("Khuyến mãi")
                     Text("-0đ")
                 }
@@ -194,58 +232,48 @@ fun PaymentScreen(navController: NavController, viewModel: PaymentViewModel = vi
         }
     }
 
-    // 🔹 Dialog chọn phương thức thanh toán
     if (showPaymentDialog) {
         AlertDialog(
             onDismissRequest = { showPaymentDialog = false },
             title = { Text("Chọn phương thức thanh toán") },
             text = {
                 Column {
-                    Text("Thanh toán khi nhận hàng", modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable {
-                            paymentMethod = "Thanh toán khi nhận hàng"
-                            showPaymentDialog = false
-                        }
-                        .padding(8.dp)
-                    )
-                    Text("Chuyển khoản QR", modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable {
-                            paymentMethod = "Chuyển khoản QR"
-                            showPaymentDialog = false
-                        }
-                        .padding(8.dp)
-                    )
+                    listOf("Thanh toán khi nhận hàng", "Chuyển khoản QR").forEach { method ->
+                        Text(
+                            method,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    paymentMethod = method
+                                    showPaymentDialog = false
+                                }
+                                .padding(8.dp)
+                        )
+                    }
                 }
             },
             confirmButton = {}
         )
     }
 
-    // 🔹 Dialog chọn phương thức vận chuyển
     if (showDeliveryDialog) {
         AlertDialog(
             onDismissRequest = { showDeliveryDialog = false },
             title = { Text("Chọn phương thức giao hàng") },
             text = {
                 Column {
-                    Text("Giao hàng tiêu chuẩn", modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable {
-                            deliveryMethod = "Giao hàng tiêu chuẩn"
-                            showDeliveryDialog = false
-                        }
-                        .padding(8.dp)
-                    )
-                    Text("Giao hàng nhanh", modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable {
-                            deliveryMethod = "Giao hàng nhanh"
-                            showDeliveryDialog = false
-                        }
-                        .padding(8.dp)
-                    )
+                    listOf("Giao hàng tiêu chuẩn", "Giao hàng nhanh").forEach { method ->
+                        Text(
+                            method,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    deliveryMethod = method
+                                    showDeliveryDialog = false
+                                }
+                                .padding(8.dp)
+                        )
+                    }
                 }
             },
             confirmButton = {}

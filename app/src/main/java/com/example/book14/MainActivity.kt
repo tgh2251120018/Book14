@@ -133,7 +133,8 @@ fun AppNavigation(
         composable("payment") {
             val user = FirebaseAuth.getInstance().currentUser
             if (user != null) {
-                PaymentScreen(navController)
+                val productViewModel: ProductViewModel = viewModel()
+                PaymentScreen(navController, productViewModel = productViewModel)
             } else {
                 navController.navigate("login")
             }

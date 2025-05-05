@@ -2,9 +2,9 @@ package com.example.book14.viewmodels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.Timestamp
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -25,7 +25,6 @@ data class OrderInfo(
 )
 
 class PaymentViewModel : ViewModel() {
-
     private val db = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
 
@@ -35,44 +34,46 @@ class PaymentViewModel : ViewModel() {
     private val _userInfo = MutableStateFlow(OrderInfo())
     val userInfo: StateFlow<OrderInfo> = _userInfo
 
-    private val _paymentMethod = MutableStateFlow("Thanh toán khi nhận hàng")
-    val paymentMethod: StateFlow<String> = _paymentMethod
-
-    private val _deliveryMethod = MutableStateFlow("Giao hàng tiêu chuẩn")
-    val deliveryMethod: StateFlow<String> = _deliveryMethod
-
-    fun setPaymentMethod(method: String) {
-        _paymentMethod.value = method
-    }
-
-    fun setDeliveryMethod(method: String) {
-        _deliveryMethod.value = method
-    }
-
-    fun loadCartAndUserInfo() {
+    fun loadCartAndUserInfo(selectedPurchase: SelectedPurchase?) {
         val user = auth.currentUser ?: return
         viewModelScope.launch {
             try {
-                val cartSnapshot = db.collection("carts")
-                    .whereEqualTo("uid", user.uid)
-                    .get().await()
-
-                val items = cartSnapshot.documents.mapNotNull {
-                    val productId = it.getString("productId") ?: return@mapNotNull null
-                    val product = db.collection("products")
-                        .whereEqualTo("productId", productId)
-                        .get().await().documents.firstOrNull() ?: return@mapNotNull null
-
-                    PaymentCartItem(
-                        productId = productId,
-                        name = product.getString("name") ?: "",
-                        imageUrl = product.getString("imageUrl") ?: "",
-                        quantity = it.getLong("quantity")?.toInt() ?: 1,
-                        price = product.getDouble("discountPrice") ?: 0.0
+                if (selectedPurchase != null) {
+                    // Trường hợp "Mua ngay"
+                    _cartItems.value = listOf(
+                        PaymentCartItem(
+                            productId = selectedPurchase.product.productId,
+                            name = selectedPurchase.product.name,
+                            imageUrl = selectedPurchase.product.imageUrl,
+                            quantity = selectedPurchase.quantity,
+                            price = selectedPurchase.product.price
+                        )
                     )
-                }
-                _cartItems.value = items
+                } else {
+                    // Trường hợp mua từ giỏ hàng
+                    val cartSnapshot = db.collection("carts")
+                        .whereEqualTo("uid", user.uid)
+                        .get().await()
 
+                    val items = cartSnapshot.documents.mapNotNull {
+                        val productId = it.getString("productId") ?: return@mapNotNull null
+                        val product = db.collection("products")
+                            .whereEqualTo("productId", productId)
+                            .get().await().documents.firstOrNull() ?: return@mapNotNull null
+
+                        PaymentCartItem(
+                            productId = productId,
+                            name = product.getString("name") ?: "",
+                            imageUrl = product.getString("imageUrl") ?: "",
+                            quantity = it.getLong("quantity")?.toInt() ?: 1,
+                            price = product.getDouble("discountPrice") ?: 0.0
+                        )
+                    }
+
+                    _cartItems.value = items
+                }
+
+                // Load thông tin người dùng
                 val userDoc = db.collection("users").document(user.uid).get().await()
                 _userInfo.value = OrderInfo(
                     fullName = userDoc.getString("username") ?: "",
@@ -85,11 +86,13 @@ class PaymentViewModel : ViewModel() {
         }
     }
 
-    fun getTotal(): Double {
-        return cartItems.value.sumOf { it.quantity * it.price }
-    }
-
-    fun placeOrder(onSuccess: () -> Unit, onFailure: (String) -> Unit) {
+    fun placeOrder(
+        paymentMethod: String,
+        deliveryMethod: String,
+        selectedPurchase: SelectedPurchase?, // Truyền trực tiếp thay vì dùng ProductViewModel
+        onSuccess: () -> Unit,
+        onFailure: (String) -> Unit
+    ) {
         val user = auth.currentUser ?: return onFailure("Chưa đăng nhập")
         viewModelScope.launch {
             try {
@@ -106,25 +109,33 @@ class PaymentViewModel : ViewModel() {
                     "phone" to userInfo.value.phone,
                     "fullName" to userInfo.value.fullName,
                     "total" to getTotal(),
-                    "paymentMethod" to paymentMethod.value,
-                    "deliveryMethod" to deliveryMethod.value,
+                    "paymentMethod" to paymentMethod,
+                    "deliveryMethod" to deliveryMethod,
                     "createdAt" to Timestamp.now()
                 )
 
                 db.collection("orders").add(orderData).await()
 
-                val cartSnapshot = db.collection("carts")
-                    .whereEqualTo("uid", user.uid)
-                    .get().await()
+                if (selectedPurchase == null) {
+                    // Nếu đặt hàng từ giỏ thì xóa giỏ
+                    val cartDocs = db.collection("carts")
+                        .whereEqualTo("uid", user.uid)
+                        .get().await()
 
-                cartSnapshot.documents.forEach {
-                    db.collection("carts").document(it.id).delete()
+                    for (doc in cartDocs.documents) {
+                        doc.reference.delete().await()
+                    }
                 }
 
                 onSuccess()
             } catch (e: Exception) {
-                onFailure(e.message ?: "Lỗi khi đặt hàng")
+                e.printStackTrace()
+                onFailure(e.message ?: "Đã xảy ra lỗi")
             }
         }
+    }
+
+    fun getTotal(): Double {
+        return cartItems.value.sumOf { it.price * it.quantity }
     }
 }
