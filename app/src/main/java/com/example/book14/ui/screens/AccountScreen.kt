@@ -163,11 +163,11 @@ fun AccountNavigationBar(navController: NavController) {
                     Icon(
                         imageVector = icon,
                         contentDescription = label,
-                        tint = if (route == "home") Color(0xFFFFD700) else Color.White
+                        tint = if (route == "account") Color(0xFFFFD700) else Color.White
                     )
                 },
                 label = { Text(text = label, color = Color.White) },
-                selected = route == "home",
+                selected = route == "account",
                 onClick = { navController.navigate(route) }
             )
         }

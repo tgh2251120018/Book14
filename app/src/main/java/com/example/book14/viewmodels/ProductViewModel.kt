@@ -24,10 +24,19 @@ data class ProductUiState(
     val publisher: String = ""
 )
 
+data class SelectedPurchase(
+    val product: ProductUiState,
+    val quantity: Int
+)
+
 class ProductViewModel : ViewModel() {
     private val db = FirebaseFirestore.getInstance()
     private val _uiState = MutableStateFlow(ProductUiState())
     val uiState: StateFlow<ProductUiState> = _uiState
+
+    // Sản phẩm mua ngay (gồm cả số lượng)
+    private val _selectedPurchase = MutableStateFlow<SelectedPurchase?>(null)
+    val selectedPurchase: StateFlow<SelectedPurchase?> = _selectedPurchase
 
     fun loadProduct(productId: String) {
         viewModelScope.launch {
@@ -65,6 +74,14 @@ class ProductViewModel : ViewModel() {
     private fun calculateDiscount(original: Double, discounted: Double): Int {
         if (original == 0.0) return 0
         return (((original - discounted) / original) * 100).toInt()
+    }
+
+    fun selectProductForPurchase(quantity: Int) {
+        _selectedPurchase.value = SelectedPurchase(_uiState.value, quantity)
+    }
+
+    fun clearSelectedPurchase() {
+        _selectedPurchase.value = null
     }
 
     fun addToCart(quantity: Int) {

@@ -3,34 +3,18 @@ package com.example.book14.ui.screens
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -51,6 +35,14 @@ fun SearchResultScreen(
 ) {
     val selectedFilter by viewModel.selectedFilter.collectAsState()
     val priceSortAsc by viewModel.priceSortAsc.collectAsState()
+    val searchResults by viewModel.searchResults.collectAsState()
+
+    var searchQuery by remember { mutableStateOf(query) }
+
+    // Tìm kiếm ban đầu khi mở màn hình
+    LaunchedEffect(query) {
+        viewModel.searchProducts(query)
+    }
 
     Column(modifier = Modifier.fillMaxSize().background(Color.White)) {
 
@@ -59,26 +51,37 @@ fun SearchResultScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp)
-                .background(Color.White, shape = RoundedCornerShape(8.dp))
-                .padding(horizontal = 12.dp, vertical = 5.dp),
+                .background(Color.White, shape = RoundedCornerShape(8.dp)),
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(onClick = { navController.popBackStack() }) {
-                Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = "Back"
+                )
             }
-            Box(
+            TextField(
+                value = searchQuery,
+                onValueChange = { searchQuery = it },
+                placeholder = { Text("Tìm kiếm...") },
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color.LightGray, shape = RoundedCornerShape(8.dp))
-                    .padding(8.dp),
-                contentAlignment = Alignment.CenterStart
-            ) {
-                Row {
-                    Icon(imageVector = Icons.Default.Search, contentDescription = "Search")
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(text = query, color = Color.Gray)
+                    .weight(1f)
+                    .padding(start = 8.dp),
+                singleLine = true,
+                shape = RoundedCornerShape(8.dp),
+                colors = TextFieldDefaults.textFieldColors(
+                    backgroundColor = Color.LightGray,
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent
+                ),
+                trailingIcon = {
+                    IconButton(onClick = {
+                        viewModel.searchProducts(searchQuery)
+                    }) {
+                        Icon(imageVector = Icons.Default.Search, contentDescription = "Search")
+                    }
                 }
-            }
+            )
         }
 
         // 📊 Bộ lọc
@@ -94,7 +97,7 @@ fun SearchResultScreen(
                     Button(
                         onClick = { viewModel.onPriceSortSelected() },
                         colors = ButtonDefaults.buttonColors(
-                            backgroundColor = if (selectedFilter.contains("Giá")) Color.Red else Color.LightGray
+                            backgroundColor = if (selectedFilter.startsWith("Giá")) Color.Red else Color.LightGray
                         ),
                         shape = RoundedCornerShape(8.dp)
                     ) {
@@ -129,7 +132,7 @@ fun SearchResultScreen(
             modifier = Modifier.padding(8.dp),
             contentPadding = PaddingValues(8.dp)
         ) {
-            items(viewModel.productList) { product ->
+            items(searchResults) { product ->
                 ProductItem(product = product) {
                     navController.navigate("product/${product.id}")
                 }

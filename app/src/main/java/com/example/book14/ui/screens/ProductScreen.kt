@@ -36,9 +36,10 @@ fun ProductScreen(
     navController: NavController
 ) {
     val state by viewModel.uiState.collectAsState()
-    var showDialog by remember { mutableStateOf(false) }
-    var quantity by remember { mutableIntStateOf(1) }
     val context = LocalContext.current
+    var showDialog by remember { mutableStateOf(false) }
+    var isBuyNow by remember { mutableStateOf(false) } // Phân biệt hành động
+    var quantity by remember { mutableIntStateOf(1) }
 
     LaunchedEffect(productId) {
         viewModel.loadProduct(productId)
@@ -69,14 +70,18 @@ fun ProductScreen(
                     .padding(12.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                OutlinedButton(onClick = { showDialog = true }) {
+                OutlinedButton(onClick = {
+                    isBuyNow = false
+                    showDialog = true
+                }) {
                     Text("Thêm vào giỏ")
                 }
                 Button(
                     onClick = {
                         val user = FirebaseAuth.getInstance().currentUser
                         if (user != null) {
-                            navController.navigate("payment")
+                            isBuyNow = true
+                            showDialog = true
                         } else {
                             navController.navigate("login")
                         }
@@ -93,7 +98,6 @@ fun ProductScreen(
                 .padding(paddingValues)
                 .verticalScroll(rememberScrollState())
         ) {
-            // Ảnh sản phẩm có thể nhấn
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
                     .data(state.imageUrl)
@@ -105,7 +109,6 @@ fun ProductScreen(
                     .height(300.dp)
                     .clickable {
                         Toast.makeText(context, "Xem ảnh chi tiết: ${state.imageUrl}", Toast.LENGTH_SHORT).show()
-                        // Hoặc mở ảnh fullscreen tại đây nếu muốn
                     },
                 contentScale = ContentScale.Fit
             )
@@ -113,15 +116,12 @@ fun ProductScreen(
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(state.name, fontWeight = FontWeight.Bold, fontSize = 20.sp)
                 Spacer(Modifier.height(4.dp))
-
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text("★ ${state.rating}", color = Color(0xFFFFA500))
                     Spacer(Modifier.width(8.dp))
                     Text("Đã bán ${state.sold}")
                 }
-
                 Spacer(Modifier.height(8.dp))
-
                 Text(
                     text = "${state.price.toInt()}đ",
                     color = Color.Red,
@@ -137,11 +137,9 @@ fun ProductScreen(
                         )
                     )
                 }
-
                 Spacer(Modifier.height(12.dp))
                 Text("Tác giả: ${state.author}", fontSize = 14.sp, fontWeight = FontWeight.Medium)
                 Text("Nhà xuất bản: ${state.publisher}", fontSize = 14.sp, fontWeight = FontWeight.Medium)
-
                 Spacer(Modifier.height(16.dp))
                 Text("Đặc điểm nổi bật", fontWeight = FontWeight.Bold)
                 Spacer(Modifier.height(4.dp))
@@ -154,27 +152,23 @@ fun ProductScreen(
         }
     }
 
-    // 👉 Popup chọn số lượng
     if (showDialog) {
         AddToCartDialog(
             quantity = quantity,
             onQuantityChange = { quantity = it },
             onDismiss = { showDialog = false },
             onConfirm = {
-                viewModel.addToCart(quantity)
-                var showToast = false
                 showDialog = false
+                if (isBuyNow) {
+                    viewModel.selectProductForPurchase(quantity)
+                    navController.navigate("payment")
+                } else {
+                    viewModel.addToCart(quantity)
+                    Toast.makeText(context, "Đã thêm vào giỏ", Toast.LENGTH_SHORT).show()
+                }
             }
         )
     }
-    var showToast = false
-    if (showToast) {
-        LaunchedEffect(Unit) {
-            Toast.makeText(context, "Đã thêm vào giỏ", Toast.LENGTH_SHORT).show()
-            showToast = true
-        }
-    }
-
 }
 
 @Composable

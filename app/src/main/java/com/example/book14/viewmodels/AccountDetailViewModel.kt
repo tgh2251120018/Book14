@@ -7,11 +7,14 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import android.net.Uri
+import com.google.firebase.storage.FirebaseStorage
 
 class AccountDetailViewModel : ViewModel() {
 
     private val db = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
+    private val storage = FirebaseStorage.getInstance()
 
     val username = mutableStateOf("")
     val email = mutableStateOf("")
@@ -63,11 +66,26 @@ class AccountDetailViewModel : ViewModel() {
             }
         }
     }
+    fun uploadAvatarImage(imageUri: Uri, onDone: (Boolean) -> Unit) {
+        val user = auth.currentUser ?: return onDone(false)
 
+        val ref = storage.reference.child("avatars/${user.uid}.jpg")
+        viewModelScope.launch {
+            try {
+                ref.putFile(imageUri).await()
+                val downloadUrl = ref.downloadUrl.await().toString()
+                avatarUrl.value = downloadUrl
+                updateUserData() // cập nhật vào Firestore luôn
+                onDone(true)
+            } catch (e: Exception) {
+                message.value = "Lỗi upload ảnh: ${e.message}"
+                onDone(false)
+            }
+        }
+    }
     fun updateAvatarUrl(newUrl: String) {
         avatarUrl.value = newUrl
     }
-
     fun signOut() {
         auth.signOut()
     }

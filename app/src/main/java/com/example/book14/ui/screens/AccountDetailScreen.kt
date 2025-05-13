@@ -14,6 +14,12 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.book14.viewmodels.AccountDetailViewModel
+import android.net.Uri
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.clickable
+import androidx.compose.ui.platform.LocalContext
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -61,24 +67,38 @@ fun AccountDetailScreen(
                     .padding(innerPadding)
                     .padding(16.dp)
             ) {
-                // 🔥 Avatar preview
+                val context = LocalContext.current
+                val imagePicker = rememberLauncherForActivityResult(
+                    contract = ActivityResultContracts.GetContent()
+                ) { uri: Uri? ->
+                    uri?.let {
+                        viewModel.uploadAvatarImage(it) { success ->
+                            if (!success) {
+                                Toast.makeText(context, "Không thể cập nhật ảnh", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    }
+                }
+
+// Hiển thị avatar (từ link hoặc URI đã chọn)
                 AsyncImage(
                     model = avatarUrl,
                     contentDescription = "Avatar",
                     modifier = Modifier
                         .size(100.dp)
                         .align(Alignment.CenterHorizontally)
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // 🔥 Link nhập avatar
-                OutlinedTextField(
-                    value = avatarUrl,
-                    onValueChange = { viewModel.updateAvatarUrl(it) },
-                    label = { Text("Link hình đại diện") },
-                    modifier = Modifier.fillMaxWidth()
+                        .clickable {
+                            imagePicker.launch("image/*") // Khi nhấn vào avatar, mở thư viện ảnh
+                        }
                 )
                 Spacer(modifier = Modifier.height(8.dp))
+
+                Text(
+                    text = "Chạm vào hình để thay ảnh từ thư viện",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                )
 
                 OutlinedTextField(
                     value = username,

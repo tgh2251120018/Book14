@@ -27,8 +27,6 @@ class AccountViewModel : ViewModel() {
 
     private val _settingItems = MutableStateFlow(
         listOf(
-            AccountSettingItemData("Tài khoản & Bảo mật", Icons.Filled.Lock),
-            AccountSettingItemData("Địa chỉ", Icons.Filled.LocationOn),
             AccountSettingItemData("Tài khoản/Thẻ ngân hàng", Icons.Filled.CreditCard),
             AccountSettingItemData("Trung tâm hỗ trợ", Icons.Filled.Help),
             AccountSettingItemData("Điều khoản dịch vụ", Icons.Filled.Description),
